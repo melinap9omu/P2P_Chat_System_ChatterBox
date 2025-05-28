@@ -19,8 +19,17 @@ dependencies {
     implementation("jakarta.servlet:jakarta.servlet-api:6.0.0") // Or 5.0.0
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("mysql:mysql-connector-java:8.0.33")
-    implementation("org.eclipse.jetty:jetty-server:11.0.11")
-    implementation("org.eclipse.jetty:jetty-servlet:11.0.11")
+
+    // For websockets
+    val jettyVersion = "11.0.24"
+    implementation("org.eclipse.jetty:jetty-server:${jettyVersion}")
+    implementation("org.eclipse.jetty:jetty-servlet:${jettyVersion}")
+    implementation("org.eclipse.jetty.websocket:websocket-jetty-server:${jettyVersion}")
+    implementation("org.eclipse.jetty.websocket:websocket-jetty-client:${jettyVersion}")
+
+
+
+
     implementation("com.google.code.gson:gson:2.10.1")
 
 }
