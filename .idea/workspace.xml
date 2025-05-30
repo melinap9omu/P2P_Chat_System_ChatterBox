@@ -5,13 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7bbc3a3f-ee36-4a92-992c-167d0d7f1ff8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/chatController.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/sessionController.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/model/message.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/model/user.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/registerControler.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/registerController.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/chatController.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/signalController.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/sessionController.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/sessionController.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
