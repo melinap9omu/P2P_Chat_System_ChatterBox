@@ -9,7 +9,7 @@ import org.example.com.ku.p2pchat.daoImple.registerDaoimp
 import org.example.com.ku.p2pchat.model.userRegister
 
 @WebServlet("/register")
-class registerControler : HttpServlet() {
+class registerController : HttpServlet() {
 
     // Create a Gson object to convert JSON to Kotlin and vice versa
     private val gson = Gson()

@@ -1,4 +1,3 @@
 package org.example.com.ku.p2pchat.com.ku.p2pchat.model
 
-class message {
-}
+data class message(val senderId: String, val recipientId: String , val content:String, val type:String="chat" )
