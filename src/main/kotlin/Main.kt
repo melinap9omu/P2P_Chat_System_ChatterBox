@@ -1,29 +1,47 @@
 package org.example.com.ku.p2pchat
 
+import com.ku.p2pchat.database.DatabaseConnection
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.ServletContextHandler
 import org.eclipse.jetty.servlet.ServletHolder
+import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.forgetPasswordController
 import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.userLoginController
+import org.example.com.ku.p2pchat.com.ku.p2pchat.database.databaseTable
 
 fun main() {
-    // Create a Jetty server on port 8080
-    val server = Server(8080)
 
-    // Set up the context ("/" means root)
-    val context = ServletContextHandler(ServletContextHandler.SESSIONS)
-    context.contextPath = "/"
+    try {
+        // ✅ Connect to the database and initialize
+        val connection = DatabaseConnection.getConnection()
+        databaseTable.initializeDatabase(connection)
+        println("✅ Database and tables initialized successfully")
+        connection.close()
 
-    // Register the register servlet
-    val registerServlet = ServletHolder(registerControler())
-    context.addServlet(registerServlet, "/register")
+        // Create a Jetty server on port 8080
+        val server = Server(8080)
 
-    val loginServlet= ServletHolder(userLoginController())
-    context.addServlet(loginServlet,"/login")
+        // Set up the context ("/" means root)
+        val context = ServletContextHandler(ServletContextHandler.SESSIONS)
+        context.contextPath = "/"
 
-    // Attach context to server
-    server.handler = context
+        // Register the register servlet
+        val registerServlet = ServletHolder(registerControler())
+        context.addServlet(registerServlet, "/register")
 
-    println("🚀 Server started at http://localhost:8080")
-    server.start()
-    server.join()
+        val loginServlet = ServletHolder(userLoginController())
+        context.addServlet(loginServlet, "/login")
+
+        val forgetServlet = ServletHolder(forgetPasswordController())
+        context.addServlet(forgetServlet, "/forgetPassword")
+
+        // Attach context to server
+        server.handler = context
+
+        println("🚀 Server started at http://localhost:8080")
+        server.start()
+        server.join()
+    }catch(e: Exception){
+        println("❌ Failed to connect or initialize DB: ${e.message}")
+
+    }
 }
