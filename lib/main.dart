@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Import the separate login page file
 import 'login_page.dart';
 
 void main() {
@@ -79,7 +78,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Row with "Welcome" (gradient) and "to" (white)
+                        
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
