@@ -1,8 +1,11 @@
 package org.example.com.ku.p2pchat.dao
 
-import org.example.com.ku.p2pchat.model.userRegister
+import org.example.com.ku.p2pchat.com.ku.p2pchat.model.user
+
+
+
 
 
 interface registerDao {
-    fun registerUser(user: userRegister): Boolean
+    fun registerUser(user: user): Boolean
 }

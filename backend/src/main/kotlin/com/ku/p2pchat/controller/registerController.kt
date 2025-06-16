@@ -5,8 +5,10 @@ import jakarta.servlet.annotation.WebServlet
 import jakarta.servlet.http.HttpServlet
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.example.com.ku.p2pchat.com.ku.p2pchat.model.user
 import org.example.com.ku.p2pchat.daoImple.registerDaoimp
 import org.example.com.ku.p2pchat.model.userRegister
+import at.favre.lib.crypto.bcrypt.BCrypt
 
 @WebServlet("/register")
 class registerController : HttpServlet() {
@@ -23,23 +25,33 @@ class registerController : HttpServlet() {
         try {
             // Read the incoming JSON and convert it into a userRegister object
             val reader = req.reader
-            val user = gson.fromJson(reader, userRegister::class.java)
+            val incomingRequest = gson.fromJson(reader, userRegister::class.java)
 
             // Check if password and repassword match
-            if (user.getPassword() != user.getRepassword()) {
+            if (incomingRequest.Password!= incomingRequest.RePassword) {
                 val json = gson.toJson(mapOf("success" to false, "message" to "❌ Passwords do not match"))
                 out.write(json)
                 return
             }
 
+            val hashedPassword = BCrypt.withDefaults().hashToString(12, incomingRequest.Password.toCharArray())
+
+            val userToRegister= user(
+                id = incomingRequest.id,
+                FirstName = incomingRequest.FirstName,
+                LastName = incomingRequest.LastName,
+                PhoneNo = incomingRequest.PhoneNo,
+                email = incomingRequest.email,
+                hashPassword = hashedPassword
+            )
 
             // Call DAO to register the user
             val dao = registerDaoimp()
-            val isRegistered = dao.registerUser(user)
+            val isRegistered = dao.registerUser(userToRegister)
 
             // Send success or failure response
             val result = if (isRegistered) {
-                mapOf("success" to true, "message" to "✅ ${user.getFirstName()} registered successfully!")
+                mapOf("success" to true, "message" to "✅ ${userToRegister.FirstName} registered successfully!")
             } else {
                 mapOf("success" to false, "message" to "❌ Registration failed")
             }

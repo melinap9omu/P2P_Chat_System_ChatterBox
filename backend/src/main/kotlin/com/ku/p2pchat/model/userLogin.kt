@@ -1,16 +1,9 @@
 package org.example.com.ku.p2pchat.com.ku.p2pchat.model
 
-open class userLogin {
-    private var number:String=""
-    private var password:String=""
-
-    fun getNumber(): String = number
-    fun setNumber(number: String) {
-        this.number = number
-    }
-
-    fun getPassword(): String= password
-    fun setPassword(password:String){
-        this.password=password
-    }
-}
+// Changed to a data class for conciseness and efficiency.
+// Properties are now public 'val' or 'var' directly in the constructor.
+data class userLogin(
+    val number: String, // 'val' for immutable, or 'var' if you need to reassign
+    val password: String // 'val' for immutable, or 'var' if you need to reassign
+)
+// No need for explicit getNumber(), setNumber(), etc. The compiler generates them.

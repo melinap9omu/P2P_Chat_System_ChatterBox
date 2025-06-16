@@ -19,8 +19,8 @@ fun main() {
                     last_name VARCHAR(50) NOT NULL,
                     number VARCHAR(10) NOT NULL,
                     email VARCHAR(50) NOT NULL UNIQUE,
-                    password VARCHAR(100) NOT NULL,
-                    re_password VARCHAR(100) NOT NULL
+                    password_hash VARCHAR(255) NOT NULL
+                    
                 );
             """.trimIndent()
 

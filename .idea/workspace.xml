@@ -5,9 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7bbc3a3f-ee36-4a92-992c-167d0d7f1ff8" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/signalControllee.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/chatController.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/signalController.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/registerController.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/registerController.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/sessionController.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/sessionController.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/signalController.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/userLoginController.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/userLoginController.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/dao/registerDao.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/dao/registerDao.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/dao/userLogindao.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/dao/userLogindao.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/daoImple/registerDaoimp.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/daoImple/registerDaoimp.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/daoImple/userLogindaoImp.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/daoImple/userLogindaoImp.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/database/database.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/database/database.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/model/user.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/model/user.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/model/userLogin.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/model/userLogin.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/model/userRegister.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/model/userRegister.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,21 +81,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Gradle.Build backend.executor": "Run",
-    "Gradle.backend [clean].executor": "Run",
-    "Kotlin.MainKt.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "feature-message",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/Melina/P2P_Chat_System_ChatterBox",
-    "settings.editor.selected.configurable": "vcs.log"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.Build backend.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.backend [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Kotlin.MainKt.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature-message&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Melina/P2P_Chat_System_ChatterBox&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;vcs.log&quot;
   }
-}]]></component>
-  <component name="RunManager" selected="Kotlin.MainKt">
+}</component>
+  <component name="RecentsManager">
+    <key name="K2MoveDeclarationsDialog.RECENT_PACKAGE_KEY">
+      <recent name="org.example.com.ku.p2pchat.com.ku.p2pchat.dao" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Gradle.backend [clean]">
     <configuration name="backend [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -114,8 +132,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Kotlin.MainKt" />
         <item itemvalue="Gradle.backend [clean]" />
+        <item itemvalue="Kotlin.MainKt" />
       </list>
     </recent_temporary>
   </component>
@@ -139,5 +157,25 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="kotlin-line">
+          <url>file://$PROJECT_DIR$/backend/src/main/kotlin/Main.kt</url>
+          <line>16</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="kotlin-function">
+          <url>file://$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/signalControllee.kt</url>
+          <line>13</line>
+          <properties class="org.example.com.ku.p2pchat.com.ku.p2pchat.controller.signalControllee" method="&lt;init&gt;">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

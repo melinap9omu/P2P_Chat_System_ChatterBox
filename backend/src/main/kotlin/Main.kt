@@ -4,7 +4,6 @@ import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.ServletContextHandler
 import org.eclipse.jetty.servlet.ServletHolder
 import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.userLoginController
-import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.signalController
 fun main() {
     // Create a Jetty server on port 8080
     val server = Server(8080)

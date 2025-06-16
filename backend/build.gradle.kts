@@ -26,6 +26,8 @@ dependencies {
     implementation("org.eclipse.jetty:jetty-servlet:${jettyVersion}")
     implementation("org.eclipse.jetty.websocket:websocket-jetty-server:${jettyVersion}")
     implementation("org.eclipse.jetty.websocket:websocket-jetty-client:${jettyVersion}")
+    implementation("org.eclipse.jetty.websocket:websocket-servlet:${jettyVersion}")
+    implementation("at.favre.lib:bcrypt:0.9.0")
 
 
 
