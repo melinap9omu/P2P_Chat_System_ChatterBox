@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7bbc3a3f-ee36-4a92-992c-167d0d7f1ff8" name="Changes" comment="" />
+    <list default="true" id="7bbc3a3f-ee36-4a92-992c-167d0d7f1ff8" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/signalControllee.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/signalControllee.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/model/message.kt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/model/SignalingMessage.kt" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -160,7 +164,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="kotlin-function">
           <url>file://$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/controller/signalControllee.kt</url>
-          <line>21</line>
+          <line>22</line>
           <properties class="org.example.com.ku.p2pchat.com.ku.p2pchat.controller.signalControllee" method="&lt;init&gt;">
             <option name="EMULATED" value="true" />
             <option name="WATCH_EXIT" value="false" />
