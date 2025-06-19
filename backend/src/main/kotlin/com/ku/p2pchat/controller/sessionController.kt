@@ -17,7 +17,7 @@ object sessionController {
     fun addSession(user: user, session: Session){
         activeSessions[user.id] = session
         activeUsers[user.id]= user
-        println("User ${user.username} (${user.id}) connected. Total users: ${activeSessions.size}")
+        println("User ${user.FirstName} (${user.id}) connected. Total users: ${activeSessions.size}")
 
 
     }

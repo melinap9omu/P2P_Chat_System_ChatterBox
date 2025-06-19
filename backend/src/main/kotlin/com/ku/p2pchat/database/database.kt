@@ -19,7 +19,10 @@ fun main() {
                     last_name VARCHAR(50) NOT NULL,
                     number VARCHAR(10) NOT NULL,
                     email VARCHAR(50) NOT NULL UNIQUE,
-                    password_hash VARCHAR(255) NOT NULL
+                    password_hash VARCHAR(255) NOT NULL,
+                    public_key_pem TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              
                     
                 );
             """.trimIndent()

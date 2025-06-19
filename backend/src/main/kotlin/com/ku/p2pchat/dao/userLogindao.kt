@@ -6,4 +6,6 @@ import org.example.com.ku.p2pchat.com.ku.p2pchat.model.userLogin
 
 interface UserLogindao {
     fun login(number:String,password: String): user?
+    fun findUserById(id:Int):user?
+    fun updateUserPublicKey(user: user):Boolean
 }
