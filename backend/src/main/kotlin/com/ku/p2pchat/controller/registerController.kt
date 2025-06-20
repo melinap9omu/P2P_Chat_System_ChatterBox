@@ -42,7 +42,8 @@ class registerController : HttpServlet() {
                 LastName = incomingRequest.LastName,
                 PhoneNo = incomingRequest.PhoneNo,
                 email = incomingRequest.email,
-                hashPassword = hashedPassword
+                hashPassword = hashedPassword,
+                publicKeyPem = null
             )
 
             // Call DAO to register the user

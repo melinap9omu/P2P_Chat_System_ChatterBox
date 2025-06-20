@@ -5,10 +5,10 @@ import org.eclipse.jetty.websocket.api.Session
 import jakarta.servlet.annotation.WebServlet
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect
 import org.eclipse.jetty.websocket.api.annotations.WebSocket
-import jakarta.servlet.http.HttpServlet
 import jakarta.servlet.http.HttpSession
-import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage
 import org.eclipse.jetty.websocket.server.JettyWebSocketServlet
 import org.eclipse.jetty.websocket.server.JettyWebSocketServletFactory
@@ -16,8 +16,6 @@ import org.example.com.ku.p2pchat.com.ku.p2pchat.model.user
 import org.example.com.ku.p2pchat.com.ku.p2pchat.daoImple.userLogindaoImp
 import org.example.com.ku.p2pchat.com.ku.p2pchat.model.SignalingMessage
 
-
-import java.util.UUID
 
 @WebServlet("/signal")
 class signalControllee : JettyWebSocketServlet(){
@@ -108,6 +106,21 @@ class SignalingSocket (private val user: user){
         }
 
     }
+    @OnWebSocketClose
+    fun onClose(statusCode:Int, reason:String?){
+        println("User ${user.id} WebSocket disconnected. Status: $statusCode, Reason: $reason")
+        sessionController.removeSession(user.id)
+    }
+
+    @OnWebSocketError
+    fun onError(cause: Throwable?){
+        System.err.println("User ${user.id} WebSocket error:${cause?.message}")
+        cause?.printStackTrace()
+        sessionController.removeSession(user.id)
+
+    }
+
+
 
 
 
