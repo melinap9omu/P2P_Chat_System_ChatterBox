@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'chat_page.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -112,6 +113,12 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
+                        Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ChatPage(),
+                        ),
+                      );
                       // Handle sign-up logic here
                     },
                     style: ElevatedButton.styleFrom(
@@ -135,7 +142,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+               /* const SizedBox(height: 20),
 
                 // Google Login Button
                 ElevatedButton.icon(
@@ -161,7 +168,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                ),
+                ),*/
               ],
             ),
           ),

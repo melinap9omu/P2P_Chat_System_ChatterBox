@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'chat_page.dart';
+import 'profile_page.dart';
 
 class FriendPage extends StatefulWidget {
   const FriendPage({super.key});
@@ -13,6 +15,13 @@ class _FriendPageState extends State<FriendPage> {
     {'name': 'Alice', 'status': 'Online'},
     {'name': 'Bob', 'status': 'Offline'},
     {'name': 'Charlie', 'status': 'Busy'},
+  ];
+
+  final List<String> labels = ['Chat', 'Friends', 'Profile'];
+  final List<IconData> icons = [
+    Icons.chat_bubble_outline,
+    Icons.group_outlined,
+    Icons.person_outline
   ];
 
   void _addFriend() {
@@ -45,7 +54,6 @@ class _FriendPageState extends State<FriendPage> {
                   ),
                 ),
               ),
-              
             ],
           ),
           actions: [
@@ -53,7 +61,8 @@ class _FriendPageState extends State<FriendPage> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+              child:
+                  const Text('Cancel', style: TextStyle(color: Colors.white54)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -103,7 +112,8 @@ class _FriendPageState extends State<FriendPage> {
               });
               Navigator.pop(context);
             },
-            child: const Text('Remove', style: TextStyle(color: Colors.redAccent)),
+            child:
+                const Text('Remove', style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),
@@ -112,8 +122,10 @@ class _FriendPageState extends State<FriendPage> {
 
   @override
   Widget build(BuildContext context) {
+    const selectedIndex = 1; // Friends is selected
+
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+   backgroundColor: const Color.fromARGB(255, 25, 25, 25),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -196,6 +208,82 @@ class _FriendPageState extends State<FriendPage> {
                 );
               },
             ),
+      bottomNavigationBar: Container(
+        height: 90,
+        decoration: const BoxDecoration(
+          color: const Color.fromARGB(255, 25, 25, 25),
+        ),
+        child: Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            Positioned(
+              bottom: 0,
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: 70,
+              color: const Color.fromARGB(255, 14, 14, 14),
+              ),
+            ),
+            Positioned(
+              top: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(3, (index) {
+                  final isSelected = selectedIndex == index;
+                  return GestureDetector(
+                    onTap: () {
+                      if (index == 0) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const ChatPage()),
+                        );
+                      } else if (index == 2) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const ProfilePage()),
+                        );
+                      }
+                    },
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width / 3,
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 8),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isSelected
+                                  ? const Color.fromARGB(255, 98, 48, 139)
+                                  : Colors.transparent,
+                            ),
+                            child: Icon(
+                              icons[index],
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            labels[index],
+                            style: GoogleFonts.almarai(
+                              fontSize: 13,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

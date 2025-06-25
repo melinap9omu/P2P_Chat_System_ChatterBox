@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'friend_page.dart';
 import 'profile_page.dart';
+import 'chatdetail_page.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -69,7 +70,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: const Color.fromARGB(255, 25, 25, 25),
       body: Column(
         children: [
           const SizedBox(height: 60),
@@ -103,27 +104,35 @@ class _ChatPageState extends State<ChatPage> {
                     itemCount: filteredChats.length,
                     itemBuilder: (context, index) {
                       final chat = filteredChats[index];
-                      return ListTile(
-                        leading: const CircleAvatar(
-                          backgroundColor: Colors.white24,
-                          child: Icon(Icons.person, color: Colors.white70),
-                        ),
-                        title: Text(
-                          chat['name']!,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          chat['message']!,
-                          style: const TextStyle(color: Colors.white60),
-                        ),
-                        trailing: Text(
-                          chat['time']!,
-                          style: const TextStyle(
-                              color: Colors.white38, fontSize: 12),
-                        ),
-                      );
+                    return InkWell(
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatDetailPage(userName: chat['name']!),
+      ),
+    );
+  },
+  child: ListTile(
+    leading: const CircleAvatar(
+      backgroundColor: Colors.white24,
+      child: Icon(Icons.person, color: Colors.white70),
+    ),
+    title: Text(
+      chat['name']!,
+      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+    ),
+    subtitle: Text(
+      chat['message']!,
+      style: const TextStyle(color: Colors.white60),
+    ),
+    trailing: Text(
+      chat['time']!,
+      style: const TextStyle(color: Colors.white38, fontSize: 12),
+    ),
+  ),
+);
+
                     },
                   ),
           ),
@@ -138,7 +147,7 @@ class _ChatPageState extends State<ChatPage> {
       bottomNavigationBar: Container(
         height: 90,
         decoration: const BoxDecoration(
-          color: Color(0xFF121212),
+          color: const Color.fromARGB(255, 25, 25, 25),
         ),
         child: Stack(
           alignment: Alignment.topCenter,
@@ -148,7 +157,7 @@ class _ChatPageState extends State<ChatPage> {
               child: Container(
                 width: MediaQuery.of(context).size.width,
                 height: 70,
-                color: Colors.black,
+                 color: const Color.fromARGB(255, 14, 14, 14),
               ),
             ),
             Positioned(
