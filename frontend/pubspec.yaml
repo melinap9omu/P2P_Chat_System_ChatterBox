@@ -1,5 +1,5 @@
-name: flutter_application_1
-description: A new Flutter project
+name: p2p_chat
+description: A secure peer-to-peer chat system using WebRTC and RSA/AES
 
 environment:
   sdk: '>=3.7.0 <4.0.0'
@@ -7,11 +7,33 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # 1.WebRTC for Flutter
+  flutter_webrtc: ^0.9.36+1
+  # 2.WebSocket Client
+  web_socket_channel: ^2.4.0
+  # 3.Cryptography (RSA, AES)
+  pointycastle: ^3.7.3
+  encrypt: ^5.0.1
+  # 4.Secure Storage (for RSA Private key)
+  flutter_secure_storage: ^9.0.0
+  # 5. JSON Serialization (for structured models)
+  json_annotation: ^4.8.1
+  freezed_annotation: ^2.4.1
+  # 6.HTTP Client (for public key upload and download and for login)
+  http: ^1.2.0
+
+  asn1lib: ^1.1.0
+
   google_fonts: ^6.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^3.0.0
+  build_runner: ^2.4.8
+  json_serializable: ^6.7.1
+  freezed: ^2.4.1
+
 
 flutter:
 
