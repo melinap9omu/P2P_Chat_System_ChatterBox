@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'chat_page.dart';
 import 'friend_page.dart';
+import 'login_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -36,14 +38,12 @@ class ProfilePage extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 30),
-            // Profile Avatar
             CircleAvatar(
               radius: 50,
               backgroundImage: AssetImage('assets/profile.jpg'),
               backgroundColor: Colors.grey[800],
             ),
             const SizedBox(height: 16),
-            // User Name
             Text(
               'Your name',
               style: GoogleFonts.almarai(
@@ -53,7 +53,6 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            // Email
             Text(
               'dinisha@example.com',
               style: GoogleFonts.almarai(
@@ -63,7 +62,6 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
-            // Profile Settings Options
             const ProfileOption(icon: Icons.edit, label: 'Edit Profile'),
             const ProfileOption(icon: Icons.lock_outline, label: 'Change Password'),
             const ProfileOption(icon: Icons.settings, label: 'App Settings'),
@@ -74,7 +72,7 @@ class ProfilePage extends StatelessWidget {
       bottomNavigationBar: Container(
         height: 90,
         decoration: const BoxDecoration(
-         color: const Color.fromARGB(255, 25, 25, 25),
+          color: Color.fromARGB(255, 25, 25, 25),
         ),
         child: Stack(
           alignment: Alignment.topCenter,
@@ -166,10 +164,15 @@ class ProfileOption extends StatelessWidget {
           fontSize: 16,
         ),
       ),
-      trailing:
-          const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+      trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
       onTap: () {
-        // Add navigation or action
+        if (label == 'Log Out') {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+            (route) => false,
+          );
+        }
       },
     );
   }
