@@ -2,7 +2,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:io'; // For File
-import 'package:flutter_webrtc/flutter_webrtc.dart'; // WebRTC main library
+import 'package:flutter_webrtc/flutter_webrtc.dart' as rtc; // WebRTC main library
 import 'package:pointycastle/export.dart' as pc; // PointyCastle for crypto types
 import 'package:path_provider/path_provider.dart'; // For file saving paths
 import 'package:uuid/uuid.dart';
@@ -12,19 +12,22 @@ import '../crypto/rsa_key_manager.dart'; // Your RSA key manager
 import '../crypto/rsa_encryptionDecryption_manager.dart'; // Your RSA encryption manager
 import '../crypto/symmetric_encryptionDecryption_manager.dart'; // Your AES encryption manager
 
+// --- Corrected WebRtcClientListener Interface (All rtc. prefixes added) ---
+/// Callback interface for WebRTC events to update the UI or other parts of the app.
+/// Expanded for audio/video streams and file transfer progress.
 abstract class WebRtcClientListener {
   void onNewPeerConnected(int peerId, String peerName);
   void onPeerDisconnected(int peerId);
   void onChatMessageReceived(int senderId, String message);
-  void onConnectionStateChange(RTCPeerConnectionState state, int peerId);
+  void onConnectionStateChange(rtc.RTCPeerConnectionState state, int peerId);
   void onError(String message);
   void onKeyExchangeComplete(int peerId);
-  void onLocalStream(MediaStream stream); // New: Callback for local video/audio stream
-  void onRemoteStream(MediaStream stream, int peerId); // New: Callback for remote video/audio stream
-  void onFileMetadataReceived(int senderId, String fileId, String fileName, int fileSize, String fileType); // New
-  void onFileChunkReceived(String fileId, int currentChunk, int totalChunks); // New: Progress update
-  void onFileTransferComplete(String fileId, String fileName, int senderId, String filePath); // New
-  void onFileTransferError(String fileId, String message); // New
+  void onLocalStream(rtc.MediaStream stream);
+  void onRemoteStream(rtc.MediaStream stream, int peerId);
+  void onFileMetadataReceived(int senderId, String fileId, String fileName, int fileSize, String fileType);
+  void onFileChunkReceived(String fileId, int currentChunk, int totalChunks);
+  void onFileTransferComplete(String fileId, String fileName, int senderId, String filePath);
+  void onFileTransferError(String fileId, String message);
 }
 
 /// Manages WebRTC peer connections and data channels.
@@ -32,29 +35,28 @@ class WebRtcClient implements SignalingClientListener {
   final int currentUserId;
   final SignalingClient signalingClient;
   final WebRtcClientListener listener;
-  final Map<int, RTCPeerConnection> _peerConnections = {}; // Map of peerId -> PeerConnection
-  final Map<int, RTCDataChannel> _dataChannels = {}; // Map of peerId -> DataChannel
-  final Map<int, bool> _keyExchangeCompleted = {}; // Track key exchange status per peer
-  final Map<String, List<int>> _incomingFileBuffers = {}; // Map: fileId -> List<byte> for reassembly
-  final Map<String, String> _incomingFileNames = {}; // Map: fileId -> fileName
-  final Map<String, int> _incomingFileSizes = {}; // Map: fileId -> fileSize
+  final Map<int, rtc.RTCPeerConnection> _peerConnections = {};
+  final Map<int, rtc.RTCDataChannel> _dataChannels = {};
+  final Map<int, bool> _keyExchangeCompleted = {};
+  final Map<String, List<int>> _incomingFileBuffers = {};
+  final Map<String, String> _incomingFileNames = {};
+  final Map<String, int> _incomingFileSizes = {};
 
-  MediaStream? _localStream; // Holds the local audio/video stream
+  rtc.MediaStream? _localStream;
 
   // ICE (Interactive Connectivity Establishment) servers configuration.
   final Map<String, dynamic> _iceServers = {
     'iceServers': [
-      {'urls': 'stun:stun.l.google.com:19302'}, // Google's public STUN server
-      // Add TURN servers for robust connectivity in production
-      // {'urls': 'turn:your.turn.server.com:3478', 'username': 'user', 'credential': 'password'},
+      {'urls': 'stun:stun.l.google.com:19302'},
+      {'urls':'turn:your.turn.server.com:3478', 'username':'user','credential':'password'},
     ]
   };
 
   // SDP Constraints: Now offering to send/receive audio and video
   final Map<String, dynamic> _sdpConstraints = {
     'mandatory': {
-      'OfferToReceiveAudio': true, // Enable audio calls
-      'OfferToReceiveVideo': true, // Enable video calls
+      'OfferToReceiveAudio': true,
+      'OfferToReceiveVideo': true,
     },
     'optional': [],
   };
@@ -64,8 +66,7 @@ class WebRtcClient implements SignalingClientListener {
     required this.signalingClient,
     required this.listener,
   }) {
-    // Ensure the signaling client uses this WebRtcClient as its listener
-    // This is handled by passing 'this' to the SignalingClient constructor from main.
+    // Constructor body is empty as field initialization is done via 'this.' in parameters.
   }
 
   /// Initializes local audio and video streams (camera and microphone).
@@ -73,17 +74,17 @@ class WebRtcClient implements SignalingClientListener {
     final Map<String, dynamic> mediaConstraints = {
       'audio': true,
       'video': {
-        'facingMode': 'user', // Front camera
+        'facingMode': 'user',
       },
     };
 
-    _localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
-    listener.onLocalStream(_localStream!); // Notify UI to display local video
+    _localStream = await rtc.navigator.mediaDevices.getUserMedia(mediaConstraints);
+    listener.onLocalStream(_localStream!);
     print('Local media stream obtained: Audio: ${_localStream!.getAudioTracks().isNotEmpty}, Video: ${_localStream!.getVideoTracks().isNotEmpty}');
   }
 
   /// Adds local stream tracks to a PeerConnection.
-  void _addLocalStreamTracks(RTCPeerConnection pc) {
+  void _addLocalStreamTracks(rtc.RTCPeerConnection pc) {
     if (_localStream != null) {
       for (final track in _localStream!.getAudioTracks()) {
         pc.addTrack(track, _localStream!);
@@ -103,7 +104,7 @@ class WebRtcClient implements SignalingClientListener {
       _localStream!.getTracks().forEach((track) => track.stop());
       _localStream!.dispose();
       _localStream = null;
-      print('Local media stream stopped and disposed.');
+      print('Local media Stream stopped and disposed.');
     }
   }
 
@@ -112,34 +113,29 @@ class WebRtcClient implements SignalingClientListener {
     print('Initiating call with user ID: $targetUserId');
 
     if (_peerConnections.containsKey(targetUserId)) {
-      print('Call already in progress with $targetUserId');
+      print('Call already in progress with user ID: $targetUserId');
       listener.onError('Call already in progress with user $targetUserId');
       return;
     }
 
     try {
-      // Initialize local media stream (camera/mic)
       await _initLocalStream();
 
       final peerConnection = await createPeerConnection(targetUserId);
       _peerConnections[targetUserId] = peerConnection;
 
-      // Add local media stream tracks to the peer connection
       _addLocalStreamTracks(peerConnection);
 
-      // Create a data channel for sending text messages and files
       final dataChannel = await peerConnection.createDataChannel(
-        'chat', // Data channel label
-        RTCDataChannelInit(),
+        'chat',
+        rtc.RTCDataChannelInit(),
       );
       _dataChannels[targetUserId] = dataChannel;
       _setupDataChannelListeners(targetUserId, dataChannel);
 
-      // Create SDP Offer
       final offer = await peerConnection.createOffer(_sdpConstraints);
       await peerConnection.setLocalDescription(offer);
 
-      // Send the offer to the target user via signaling server
       signalingClient.send(SignalingMessage(
         type: 'offer',
         payload: offer.sdp,
@@ -149,16 +145,15 @@ class WebRtcClient implements SignalingClientListener {
     } catch (e) {
       print('Error initiating call with $targetUserId: $e');
       listener.onError('Failed to initiate call with user $targetUserId: $e');
-      _stopLocalStream(); // Stop local stream on error
+      _stopLocalStream();
     }
   }
 
   /// Creates and configures an RTCPeerConnection.
-  Future<RTCPeerConnection> createPeerConnection(int peerId) async {
-    final pc = await RTCPeerConnection.create(_iceServers, _sdpConstraints);
+  Future<rtc.RTCPeerConnection> createPeerConnection(int peerId) async {
+    final pc = await rtc.createPeerConnection(_iceServers, _sdpConstraints);
 
-    // --- PeerConnection Event Listeners ---
-    pc.onIceCandidate = (RTCIceCandidate candidate) {
+    pc.onIceCandidate = (rtc.RTCIceCandidate? candidate) {
       if (candidate != null) {
         print('Sending ICE candidate to $peerId: ${candidate.candidate}');
         signalingClient.send(SignalingMessage(
@@ -169,35 +164,34 @@ class WebRtcClient implements SignalingClientListener {
       }
     };
 
-    pc.onIceConnectionState = (RTCIceConnectionState state) {
+    pc.onIceConnectionState = (rtc.RTCIceConnectionState state) {
       print('ICE connection state changed for $peerId: $state');
-      listener.onConnectionStateChange(pc.iceConnectionState!, peerId);
     };
 
-    pc.onSignalingState = (RTCSignalingState state) {
+    pc.onSignalingState = (rtc.RTCSignalingState state) {
       print('Signaling state changed for $peerId: $state');
     };
 
-    pc.onConnectionState = (RTCPeerConnectionState state) {
+    pc.onConnectionState = (rtc.RTCPeerConnectionState state) {
       print('Peer connection state changed for $peerId: $state');
-      if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
+      listener.onConnectionStateChange(state, peerId);
+      if (state == rtc.RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
         print('Peer $peerId connected!');
         listener.onNewPeerConnected(peerId, 'User $peerId');
-      } else if (state == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected ||
-          state == RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
-          state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
+      } else if (state == rtc.RTCPeerConnectionState.RTCPeerConnectionStateDisconnected ||
+          state == rtc.RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
+          state == rtc.RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
         print('Peer $peerId disconnected/failed/closed.');
         disposePeerConnection(peerId);
       }
     };
 
-    // New: Handle incoming media streams from the remote peer
-    pc.onAddStream = (MediaStream stream) {
+    pc.onAddStream = (rtc.MediaStream stream) {
       print('Remote stream received from $peerId: ${stream.id}');
-      listener.onRemoteStream(stream, peerId); // Notify UI to display remote video/audio
+      listener.onRemoteStream(stream, peerId);
     };
 
-    pc.onDataChannel = (RTCDataChannel channel) {
+    pc.onDataChannel = (rtc.RTCDataChannel channel) {
       print('Remote peer $peerId opened data channel: ${channel.label}');
       _dataChannels[peerId] = channel;
       _setupDataChannelListeners(peerId, channel);
@@ -208,27 +202,21 @@ class WebRtcClient implements SignalingClientListener {
   }
 
   /// Sets up listeners for an RTCDataChannel, now handling binary messages for files.
-  void _setupDataChannelListeners(int peerId, RTCDataChannel channel) {
-    channel.onMessage = (RTCDataChannelMessage message) async {
+  void _setupDataChannelListeners(int peerId, rtc.RTCDataChannel channel) {
+    channel.onMessage = (rtc.RTCDataChannelMessage message) async {
       if (message.isBinary) {
-        // Handle incoming binary data (file chunks)
         print('Received binary message (file chunk) from $peerId.');
         _handleIncomingFileChunk(peerId, message.binary);
       } else {
-        // Handle text messages (encrypted chat or key exchange metadata)
         print('Received data channel text message from $peerId: ${message.text}');
         try {
-          // Attempt to parse as SignalingMessage for internal types (key exchange, file metadata)
           final incomingSigMsg = SignalingMessage.fromJson(jsonDecode(message.text));
 
           if (incomingSigMsg.type == 'aes_key_exchange') {
-            // Process AES key exchange
             _handleAesKeyExchange(peerId, incomingSigMsg.payload!);
           } else if (incomingSigMsg.type == 'file_metadata') {
-            // Process file metadata
             _handleIncomingFileMetadata(peerId, incomingSigMsg.metadata!);
           } else if (incomingSigMsg.type == 'chat_message') {
-            // Process encrypted chat message
             if (_keyExchangeCompleted[peerId] != true) {
               print('Received chat message before key exchange completed from $peerId. Ignoring.');
               listener.onError('Received chat message before key exchange from $peerId.');
@@ -237,16 +225,13 @@ class WebRtcClient implements SignalingClientListener {
             final decryptedMessage = SymmetricEncryptionManager.decrypt(incomingSigMsg.payload!);
             listener.onChatMessageReceived(peerId, decryptedMessage);
           } else if (incomingSigMsg.type == 'file_chunk_ack') {
-            // Acknowledge file chunk (optional for reliability, but helps with flow control)
             print('Received file chunk ACK from $peerId for file ${incomingSigMsg.metadata?['fileId']} chunk ${incomingSigMsg.metadata?['chunkIndex']}');
-            // No explicit action needed here for this simple example, but useful for sender to know.
           }
           else {
             print('Unknown data channel signaling message type: ${incomingSigMsg.type}');
           }
         } catch (e) {
           print('Error parsing or handling data channel message from $peerId: $e, Message: ${message.text}');
-          // If it's not a structured signaling message, try to decrypt as plain chat text
           if (_keyExchangeCompleted[peerId] == true) {
             try {
               final decryptedMessage = SymmetricEncryptionManager.decrypt(message.text);
@@ -262,11 +247,10 @@ class WebRtcClient implements SignalingClientListener {
       }
     };
 
-    channel.onDataChannelState = (RTCDataChannelState state) {
+    channel.onDataChannelState = (rtc.RTCDataChannelState state) {
       print('Data Channel State for $peerId: $state');
-      if (state == RTCDataChannelState.RTCDataChannelOpen) {
+      if (state == rtc.RTCDataChannelState.RTCDataChannelOpen) {
         print('Data Channel with $peerId is OPEN!');
-        // Perform key exchange once the data channel is open
         _performKeyExchange(peerId, channel);
       }
     };
@@ -280,7 +264,7 @@ class WebRtcClient implements SignalingClientListener {
     final fileType = metadata['fileType'] as String;
 
     print('Received file metadata from $senderId: $fileName ($fileSize bytes)');
-    _incomingFileBuffers[fileId] = []; // Initialize buffer for this file
+    _incomingFileBuffers[fileId] = [];
     _incomingFileNames[fileId] = fileName;
     _incomingFileSizes[fileId] = fileSize;
 
@@ -289,16 +273,16 @@ class WebRtcClient implements SignalingClientListener {
 
   /// Handles incoming file chunks and reassembles the file.
   Future<void> _handleIncomingFileChunk(int senderId, Uint8List chunk) async {
-    if (chunk.length < 32) { // UUID is 16 bytes, chunkIndex 8 bytes, totalChunks 8 bytes (BigInt)
+    if (chunk.length < 32) {
       print('Received invalid small file chunk from $senderId.');
       listener.onFileTransferError('unknown', 'Received invalid file chunk size.');
       return;
     }
 
-    final String fileId = utf8.decode(chunk.sublist(0, 16)); // Assuming fileId is first 16 bytes as string
-    final int chunkIndex = ByteData.view(chunk.buffer, 16, 8).getUint64(0, Endian.little);
-    final int totalChunks = ByteData.view(chunk.buffer, 24, 8).getUint64(0, Endian.little);
-    final Uint8List data = chunk.sublist(32); // Actual data
+    final String fileId = utf8.decode(chunk.sublist(0, 16));
+    final int chunkIndex = ByteData.view(chunk.buffer, chunk.offsetInBytes + 16, 8).getUint64(0, Endian.little); // <--- CORRECTED
+    final int totalChunks = ByteData.view(chunk.buffer, chunk.offsetInBytes + 24, 8).getUint64(0, Endian.little); // <--- CORRECTED
+    final Uint8List data = chunk.sublist(32);
 
     _incomingFileBuffers[fileId]?.addAll(data);
     final receivedBytesLength = _incomingFileBuffers[fileId]?.length ?? 0;
@@ -308,7 +292,6 @@ class WebRtcClient implements SignalingClientListener {
     listener.onFileChunkReceived(fileId, chunkIndex, totalChunks);
 
     if (expectedFileSize != null && receivedBytesLength >= expectedFileSize) {
-      // All chunks received for this file
       final allBytes = _incomingFileBuffers.remove(fileId);
       final fileName = _incomingFileNames.remove(fileId);
       final fileSize = _incomingFileSizes.remove(fileId);
@@ -332,10 +315,8 @@ class WebRtcClient implements SignalingClientListener {
     }
   }
 
-
   /// Performs the RSA-AES hybrid key exchange over the data channel.
-  /// (Logic remains mostly the same, adapted to new SignalingMessage structure)
-  Future<void> _performKeyExchange(int peerId, RTCDataChannel channel) async {
+  Future<void> _performKeyExchange(int peerId, rtc.RTCDataChannel channel) async {
     if (_keyExchangeCompleted[peerId] == true) {
       print('Key exchange already completed for peer $peerId. Skipping.');
       return;
@@ -355,9 +336,7 @@ class WebRtcClient implements SignalingClientListener {
       }
       print('Received and decoded public key for user $peerId.');
 
-      // Only one peer should generate and send the AES key.
-      // Simple rule: the peer with the lower user ID generates and sends.
-      if (currentUserId < peerId) { // This peer is the initiator of the AES key exchange
+      if (currentUserId < peerId) {
         final aesKeyBase64 = SymmetricEncryptionManager.generateAesKeyBase64();
         print('Generated new AES key.');
 
@@ -370,17 +349,15 @@ class WebRtcClient implements SignalingClientListener {
           senderUserId: currentUserId,
           targetUserId: peerId,
         );
-        await channel.send(RTCDataChannelMessage(jsonEncode(keyExchangeMessage.toJson())));
+        await channel.send(rtc.RTCDataChannelMessage(jsonEncode(keyExchangeMessage.toJson())));
         print('Sent encrypted AES key to user $peerId via DataChannel.');
 
-        SymmetricEncryptionManager.setSharedAesKey(aesKeyBase64); // Set locally
+        SymmetricEncryptionManager.setSharedAesKey(aesKeyBase64);
         _keyExchangeCompleted[peerId] = true;
         listener.onKeyExchangeComplete(peerId);
         print('Key exchange completed successfully with user $peerId.');
       } else {
         print('Waiting for peer $peerId to initiate AES key exchange.');
-        // If this peer is higher ID, it just waits for the 'aes_key_exchange' message
-        // which will be handled in `_setupDataChannelListeners` -> `onMessage`.
       }
     } catch (e) {
       print('Error during key exchange with $peerId: $e');
@@ -413,11 +390,11 @@ class WebRtcClient implements SignalingClientListener {
     }
   }
 
-
-
+  /// Sends a chat message to a specific peer.
+  /// The message is encrypted before sending.
   Future<void> sendChatMessage(int targetUserId, String message) async {
     final dataChannel = _dataChannels[targetUserId];
-    if (dataChannel == null || dataChannel.state != RTCDataChannelState.RTCDataChannelOpen) {
+    if (dataChannel == null || dataChannel.state != rtc.RTCDataChannelState.RTCDataChannelOpen) {
       print('Data channel to $targetUserId not open. Cannot send message.');
       listener.onError('Chat channel to $targetUserId is not open.');
       return;
@@ -438,17 +415,19 @@ class WebRtcClient implements SignalingClientListener {
         senderUserId: currentUserId,
         targetUserId: targetUserId,
       );
-      // Send as text over DataChannel
-      await dataChannel.send(RTCDataChannelMessage(jsonEncode(chatMessage.toJson())));
+      await dataChannel.send(rtc.RTCDataChannelMessage(jsonEncode(chatMessage.toJson())));
     } catch (e) {
       print('Error sending encrypted message to $targetUserId: $e');
       listener.onError('Failed to send encrypted message to $targetUserId: $e');
     }
   }
 
+  /// Sends a file to a specific peer.
+  /// Handles reading the file, chunking, and sending binary data.
+  /// A simple protocol is used: send metadata (JSON) then binary chunks.
   Future<void> sendFile(int targetUserId, String filePath) async {
     final dataChannel = _dataChannels[targetUserId];
-    if (dataChannel == null || dataChannel.state != RTCDataChannelState.RTCDataChannelOpen) {
+    if (dataChannel == null || dataChannel.state != rtc.RTCDataChannelState.RTCDataChannelOpen) {
       listener.onError('Data channel to $targetUserId not open. Cannot send file.');
       return;
     }
@@ -466,8 +445,8 @@ class WebRtcClient implements SignalingClientListener {
 
       final fileName = file.path.split('/').last;
       final fileSize = await file.length();
-      final fileType = _getFileType(fileName); // Helper to determine file type (e.g., "image/jpeg")
-      final fileId = Uuid().v4(); // Generate a unique ID for this file transfer
+      final fileType = _getFileType(fileName);
+      final fileId = const Uuid().v4();
 
       // 1. Send file metadata (JSON, encrypted)
       final metadata = {
@@ -483,11 +462,11 @@ class WebRtcClient implements SignalingClientListener {
         senderUserId: currentUserId,
         targetUserId: targetUserId,
       );
-      await dataChannel.send(RTCDataChannelMessage(jsonEncode(metadataMessage.toJson())));
+      await dataChannel.send(rtc.RTCDataChannelMessage(jsonEncode(metadataMessage.toJson())));
       print('Sent file metadata for $fileName (ID: $fileId) to $targetUserId.');
 
       // 2. Read and send file in chunks (binary)
-      const int chunkSize = 64 * 1024; // 64 KB chunks (adjust based on WebRTC/platform limits)
+      const int chunkSize = 64 * 1024; // 64 KB chunks
       final fileBytes = await file.readAsBytes();
       int totalChunks = (fileBytes.length / chunkSize).ceil();
 
@@ -496,27 +475,27 @@ class WebRtcClient implements SignalingClientListener {
         final end = (start + chunkSize > fileBytes.length) ? fileBytes.length : start + chunkSize;
         final chunk = fileBytes.sublist(start, end);
 
-        // Prepend metadata (fileId, chunkIndex, totalChunks) to the binary chunk itself
-        // 16 bytes for UUID (fileId), 8 bytes for chunkIndex, 8 bytes for totalChunks
         final header = Uint8List(32);
-        final List<int> fileIdBytes = utf8.encode(fileId).sublist(0, 16);
-        for (int i = 0; i < fileIdBytes.length && i < header.length; i++) {
-          header[i] = fileIdBytes[i];
+        final fileIdBytes = utf8.encode(fileId);
+        for(int j = 0; j < 16; j++){
+          if(j < fileIdBytes.length){
+            header[j] = fileIdBytes[j];
+          } else {
+            header[j] = 0;
+          }
         }
-        ByteData.view(header.buffer, 16, 8).setUint64(0, i, Endian.little); // Chunk index
-        ByteData.view(header.buffer, 24, 8).setUint64(0, totalChunks, Endian.little); // Total chunks
+        ByteData.view(header.buffer, 16, 8).setUint64(0, i, Endian.little);
+        ByteData.view(header.buffer, 24, 8).setUint64(0, totalChunks, Endian.little);
 
         final chunkWithHeader = Uint8List(header.length + chunk.length);
         chunkWithHeader.setRange(0, header.length, header);
         chunkWithHeader.setRange(header.length, chunkWithHeader.length, chunk);
 
-        await dataChannel.send(RTCDataChannelMessage.fromBinary(chunkWithHeader));
-        listener.onFileChunkReceived(fileId, i + 1, totalChunks); // Update sending progress
-        // You might add a small delay here for flow control if issues arise
-        // await Future.delayed(Duration(milliseconds: 10));
+        await dataChannel.send(rtc.RTCDataChannelMessage.fromBinary(chunkWithHeader));
+        listener.onFileChunkReceived(fileId, i + 1, totalChunks);
       }
       print('File $fileName (ID: $fileId) sent completely to $targetUserId.');
-      listener.onFileTransferComplete(fileId, fileName, currentUserId, filePath); // Use currentUserId as sender of completed file
+      listener.onFileTransferComplete(fileId, fileName, currentUserId, filePath);
     } catch (e) {
       print('Error sending file $filePath to $targetUserId: $e');
       listener.onFileTransferError('unknown', 'Failed to send file: $e');
@@ -528,18 +507,12 @@ class WebRtcClient implements SignalingClientListener {
     final ext = fileName.split('.').last.toLowerCase();
     switch (ext) {
       case 'jpg':
-      case 'jpeg':
-        return 'image/jpeg';
-      case 'png':
-        return 'image/png';
-      case 'gif':
-        return 'image/gif';
-      case 'txt':
-        return 'text/plain';
-      case 'pdf':
-        return 'application/pdf';
-      default:
-        return 'application/octet-stream'; // Generic binary
+      case 'jpeg': return 'image/jpeg';
+      case 'png': return 'image/png';
+      case 'gif': return 'image/gif';
+      case 'txt': return 'text/plain';
+      case 'pdf': return 'application/pdf';
+      default: return 'application/octet-stream';
     }
   }
 
@@ -551,10 +524,10 @@ class WebRtcClient implements SignalingClientListener {
     _peerConnections.clear();
     _dataChannels.clear();
     _keyExchangeCompleted.clear();
-    _incomingFileBuffers.clear(); // Clear any pending file transfers
+    _incomingFileBuffers.clear();
     _incomingFileNames.clear();
     _incomingFileSizes.clear();
-    _stopLocalStream(); // Stop local media when disposing all
+    _stopLocalStream();
   }
 
   /// Disposes a single peer connection, including stopping local stream if applicable.
@@ -587,23 +560,21 @@ class WebRtcClient implements SignalingClientListener {
     }
 
     if (message.type == 'public_key_response') {
-     return;
+      return;
     }
 
-    // Ensure a peer connection exists for the sender, or create one if it's an offer.
     final peerConnection = _peerConnections[peerId] ?? await createPeerConnection(peerId);
     _peerConnections[peerId] = peerConnection;
 
     switch (message.type) {
       case 'offer':
         print('Received SDP offer from $peerId. Setting remote description...');
-        // If local stream isn't active yet for an incoming call, initialize it
         if (_localStream == null) {
           await _initLocalStream();
           _addLocalStreamTracks(peerConnection);
         }
         await peerConnection.setRemoteDescription(
-          RTCSessionDescription(message.payload!, 'offer'),
+          rtc.RTCSessionDescription(message.payload!, 'offer'),
         );
         final answer = await peerConnection.createAnswer(_sdpConstraints);
         await peerConnection.setLocalDescription(answer);
@@ -618,14 +589,14 @@ class WebRtcClient implements SignalingClientListener {
       case 'answer':
         print('Received SDP answer from $peerId. Setting remote description...');
         await peerConnection.setRemoteDescription(
-          RTCSessionDescription(message.payload!, 'answer'),
+          rtc.RTCSessionDescription(message.payload!, 'answer'),
         );
         break;
 
       case 'candidate':
         print('Received ICE candidate from $peerId. Adding candidate...');
         final Map<String, dynamic> candidateMap = jsonDecode(message.payload!);
-        final RTCIceCandidate candidate = RTCIceCandidate(
+        final rtc.RTCIceCandidate candidate = rtc.RTCIceCandidate(
           candidateMap['candidate'],
           candidateMap['sdpMid'],
           candidateMap['sdpMLineIndex'],
@@ -635,11 +606,14 @@ class WebRtcClient implements SignalingClientListener {
 
       case 'aes_key_exchange':
         print('Received AES key exchange message via signaling (should be via DataChannel).');
-        _handleAesKeyExchange(peerId, message.payload!);
+        if (message.payload != null) {
+          _handleAesKeyExchange(peerId, message.payload!);
+        } else {
+          print('AES key exchange message has null payload.');
+        }
         break;
 
       case 'chat_message':
-      // This will be handled by the DataChannel listener directly now.
         print('Received encrypted chat message via signaling (should be via DataChannel).');
         if (_keyExchangeCompleted[peerId] != true) {
           print('Received chat message before key exchange completed from $peerId. Ignoring.');
@@ -663,6 +637,8 @@ class WebRtcClient implements SignalingClientListener {
         print('Received file metadata via signaling (should be via DataChannel).');
         if (message.metadata != null) {
           _handleIncomingFileMetadata(peerId, message.metadata!);
+        } else {
+          print('File metadata message has null metadata.');
         }
         break;
 
@@ -675,7 +651,6 @@ class WebRtcClient implements SignalingClientListener {
   @override
   void onOpen() {
     print('Signaling connection opened. Ready for WebRTC.');
-    // You might want to update UI or fetch peer list here.
   }
 
   @override
@@ -690,12 +665,29 @@ class WebRtcClient implements SignalingClientListener {
     listener.onError('Signaling error: $error');
     disposeAll();
   }
+
+  // --- HTTP Helper for Public Key Retrieval ---
   Future<String?> _requestPublicKeyHttp(int targetUserId) async {
+    // IMPORTANT: You MUST replace this with a real HTTP call to your Kotlin backend.
+    // Ensure you add 'http' package to your pubspec.yaml if not already.
+    // import 'package:http/http.dart' as http;
+    // For example:
+    // const String SERVER_HTTP_BASE_URL = "http://YOUR_SERVER_IP:8080";
+    // try {
+    //   final response = await http.get(Uri.parse('$SERVER_HTTP_BASE_URL/public-key?targetUserId=$targetUserId'));
+    //   if (response.statusCode == 200) {
+    //     final jsonResponse = jsonDecode(response.body);
+    //     return jsonResponse['publicKeyPem'];
+    //   } else {
+    //     print('Failed to fetch public key via HTTP: ${response.statusCode} - ${response.body}');
+    //     return null;
+    //   }
+    // } catch (e) {
+    //   print('HTTP request error for public key: $e');
+    //   return null;
+    // }
 
-    print('PLACEHOLDER: Simulating HTTP request for public key of $targetUserId.');
-
-
-    return null; // Ensure this is replaced with real HTTP logic
+    print('PLACEHOLDER: Simulating HTTP request for public key of $targetUserId. REPLACE THIS WITH REAL HTTP CALL.');
+    return null;
   }
 }
-
