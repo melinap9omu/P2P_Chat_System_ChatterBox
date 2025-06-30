@@ -28,11 +28,11 @@ class User {
 
   String get fullName=>'$firstname $lastname';
 
-  Map<String, dynamic> toJson{
+  Map<String, dynamic> toJson(){
     return{
   'id': id,
-  'firstName': firstName,
-  'lastName': lastName,
+  'firstName': firstname,
+  'lastName': lastname,
   'phoneNo': phoneNo,
   'email': email
   };

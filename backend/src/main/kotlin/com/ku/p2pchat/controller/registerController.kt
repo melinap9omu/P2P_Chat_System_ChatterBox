@@ -13,6 +13,7 @@ import at.favre.lib.crypto.bcrypt.BCrypt
 @WebServlet("/register")
 class registerController : HttpServlet() {
 
+
     // Create a Gson object to convert JSON to Kotlin and vice versa
     private val gson = Gson()
 

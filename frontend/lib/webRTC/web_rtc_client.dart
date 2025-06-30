@@ -6,13 +6,14 @@ import 'package:flutter_webrtc/flutter_webrtc.dart' as rtc; // WebRTC main libra
 import 'package:pointycastle/export.dart' as pc; // PointyCastle for crypto types
 import 'package:path_provider/path_provider.dart'; // For file saving paths
 import 'package:uuid/uuid.dart';
+import 'package:http/http.dart' as http;
 
 import '../network/signaling_client.dart'; // Your SignalingClient
 import '../crypto/rsa_key_manager.dart'; // Your RSA key manager
 import '../crypto/rsa_encryptionDecryption_manager.dart'; // Your RSA encryption manager
 import '../crypto/symmetric_encryptionDecryption_manager.dart'; // Your AES encryption manager
+import '../config/app_config.dart';
 
-// --- Corrected WebRtcClientListener Interface (All rtc. prefixes added) ---
 /// Callback interface for WebRTC events to update the UI or other parts of the app.
 /// Expanded for audio/video streams and file transfer progress.
 abstract class WebRtcClientListener {
@@ -43,6 +44,8 @@ class WebRtcClient implements SignalingClientListener {
   final Map<String, int> _incomingFileSizes = {};
 
   rtc.MediaStream? _localStream;
+
+  rtc.MediaStream? getLocalStream() =>_localStream;
 
   // ICE (Interactive Connectivity Establishment) servers configuration.
   final Map<String, dynamic> _iceServers = {
@@ -668,26 +671,38 @@ class WebRtcClient implements SignalingClientListener {
 
   // --- HTTP Helper for Public Key Retrieval ---
   Future<String?> _requestPublicKeyHttp(int targetUserId) async {
-    // IMPORTANT: You MUST replace this with a real HTTP call to your Kotlin backend.
-    // Ensure you add 'http' package to your pubspec.yaml if not already.
-    // import 'package:http/http.dart' as http;
-    // For example:
-    // const String SERVER_HTTP_BASE_URL = "http://YOUR_SERVER_IP:8080";
-    // try {
-    //   final response = await http.get(Uri.parse('$SERVER_HTTP_BASE_URL/public-key?targetUserId=$targetUserId'));
-    //   if (response.statusCode == 200) {
-    //     final jsonResponse = jsonDecode(response.body);
-    //     return jsonResponse['publicKeyPem'];
-    //   } else {
-    //     print('Failed to fetch public key via HTTP: ${response.statusCode} - ${response.body}');
-    //     return null;
-    //   }
-    // } catch (e) {
-    //   print('HTTP request error for public key: $e');
-    //   return null;
-    // }
+      try {
+        final uri = Uri.parse('$SERVER_HTTP_BASE_URL/public-key?targetUserId=$targetUserId');
+        print('Fetching public key from: $uri');
 
-    print('PLACEHOLDER: Simulating HTTP request for public key of $targetUserId. REPLACE THIS WITH REAL HTTP CALL.');
-    return null;
+        final response = await http.get(uri);
+
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+          if (jsonResponse['success'] == true) { // Check backend's success flag
+            final String? publicKeyPem = jsonResponse['publicKeyPem'] as String?; // Assuming backend sends 'publicKeyPem'
+            if (publicKeyPem != null) {
+              print('Successfully fetched public key for user $targetUserId.');
+              return publicKeyPem;
+            } else {
+              print('Error: publicKeyPem field missing in response for $targetUserId: ${response.body}');
+              listener.onError('Public key not found in response for user $targetUserId.');
+              return null;
+            }
+          } else {
+            print('Failed to fetch public key: ${jsonResponse['message']}');
+            listener.onError('Failed to fetch public key: ${jsonResponse['message']}');
+            return null;
+          }
+        } else {
+          print('Failed to fetch public key via HTTP for $targetUserId: Status ${response.statusCode} - ${response.body}');
+          listener.onError('Failed to fetch public key for user $targetUserId: Status ${response.statusCode}');
+          return null;
+        }
+      } catch (e) {
+        print('HTTP request error for public key of $targetUserId: $e');
+        listener.onError('Network error fetching public key for user $targetUserId: $e');
+        return null;
+      }
   }
 }
