@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'signup_page.dart'; // Make sure this file exists
-import 'chat_page.dart'; // Import ChatPage
+import 'signup_page.dart'; 
+import 'chat_page.dart'; 
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
