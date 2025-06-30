@@ -13,7 +13,9 @@ class _SignUpPageState extends State<SignUpPage> {
   bool showPassword = false;
 
   final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
@@ -50,7 +52,13 @@ class _SignUpPageState extends State<SignUpPage> {
                   controller: _firstNameController,
                   hintText: 'First name',
                 ),
+                const SizedBox(height: 16),
 
+                // Last Name
+                _buildTextField(
+                  controller: _lastNameController,
+                  hintText: 'Last name',
+                ),
                 const SizedBox(height: 16),
 
                 // Email
@@ -58,7 +66,13 @@ class _SignUpPageState extends State<SignUpPage> {
                   controller: _emailController,
                   hintText: 'Email',
                 ),
+                const SizedBox(height: 16),
 
+                // Phone Number
+                _buildTextField(
+                  controller: _phoneController,
+                  hintText: 'Phone number',
+                ),
                 const SizedBox(height: 16),
 
                 // Password
@@ -67,19 +81,17 @@ class _SignUpPageState extends State<SignUpPage> {
                   hintText: 'Password',
                   obscureText: !showPassword,
                 ),
-
                 const SizedBox(height: 16),
 
-                // Re-enter Password
+                // Confirm Password
                 _buildTextField(
                   controller: _confirmPasswordController,
                   hintText: 'Re-enter password',
                   obscureText: !showPassword,
                 ),
-
                 const SizedBox(height: 8),
 
-                // Show password toggle
+                // Show Password Checkbox
                 Row(
                   children: [
                     Checkbox(
@@ -102,24 +114,22 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 20),
 
                 // Sign Up Button
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                     color: const Color.fromARGB(255, 92, 41, 132),
+                    color: const Color.fromARGB(255, 92, 41, 132),
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                        Navigator.push(
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const ChatPage(),
                         ),
                       );
-                      // Handle sign-up logic here
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
@@ -141,34 +151,6 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                   ),
                 ),
-
-               /* const SizedBox(height: 20),
-
-                // Google Login Button
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // Add Google sign-in logic
-                  },
-                  icon: Image.asset(
-                    'assets/google_logo.png',
-                    height: 24,
-                    width: 24,
-                  ),
-                  label: Text(
-                    'Login with Google',
-                    style: GoogleFonts.almarai(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),*/
               ],
             ),
           ),
@@ -185,6 +167,9 @@ class _SignUpPageState extends State<SignUpPage> {
     return TextField(
       controller: controller,
       obscureText: obscureText,
+      keyboardType: hintText.toLowerCase().contains('phone')
+          ? TextInputType.phone
+          : TextInputType.text,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         filled: true,
