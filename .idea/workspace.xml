@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7bbc3a3f-ee36-4a92-992c-167d0d7f1ff8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/frontend/lib/config/app_config.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/lib/model/user.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -103,6 +103,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="K2MoveDeclarationsDialog.RECENT_PACKAGE_KEY">
+      <recent name="org.example.com.ku.p2pchat.com.ku.p2pchat.controller" />
       <recent name="org.example.com.ku.p2pchat.com.ku.p2pchat.dao" />
     </key>
   </component>
@@ -180,15 +181,6 @@
           <url>file://$PROJECT_DIR$/backend/src/main/kotlin/Main.kt</url>
           <line>16</line>
           <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="kotlin-function">
-          <url>file://$PROJECT_DIR$/backend/src/main/kotlin/com/ku/p2pchat/database/database.kt</url>
-          <line>3</line>
-          <properties method="main">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="3" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="kotlin-function">
           <url>file://$PROJECT_DIR$/backend/src/main/kotlin/Main.kt</url>
