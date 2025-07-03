@@ -12,13 +12,18 @@ class ChatDetailPage extends StatefulWidget {
 
 class _ChatDetailPageState extends State<ChatDetailPage> {
   final TextEditingController _messageController = TextEditingController();
-  List<String> messages = ['Hi there!', 'How are you doing?'];
+
+  // Each message will have text and sender info
+  final List<Map<String, dynamic>> messages = [
+    {'text': 'Hi there!', 'isSentByMe': false},
+    {'text': 'How are you doing?', 'isSentByMe': true},
+  ];
 
   void _sendMessage() {
     final text = _messageController.text.trim();
     if (text.isNotEmpty) {
       setState(() {
-        messages.add(text);
+        messages.add({'text': text, 'isSentByMe': true});
         _messageController.clear();
       });
     }
@@ -69,21 +74,28 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
               padding: const EdgeInsets.all(16),
               itemCount: messages.length,
               itemBuilder: (context, index) {
+                final message = messages[index];
+                final isMe = message['isSentByMe'] as bool;
+
                 return Align(
-                  alignment: index % 2 == 0
-                      ? Alignment.centerLeft
-                      : Alignment.centerRight,
+                  alignment:
+                      isMe ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.symmetric(vertical: 4),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: index % 2 == 0
-                          ? Colors.white10
-                          : const Color(0xFF622F8A),
-                      borderRadius: BorderRadius.circular(12),
+                      color: isMe
+                          ? const Color(0xFF622F8A) // purple for sender
+                          : Colors.white10, // grey for receiver
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(12),
+                        topRight: const Radius.circular(12),
+                        bottomLeft: Radius.circular(isMe ? 12 : 0),
+                        bottomRight: Radius.circular(isMe ? 0 : 12),
+                      ),
                     ),
                     child: Text(
-                      messages[index],
+                      message['text'],
                       style: const TextStyle(color: Colors.white),
                     ),
                   ),
@@ -103,7 +115,6 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
             ),
             child: Row(
               children: [
-                // File icon
                 IconButton(
                   icon: const Icon(Icons.attach_file, color: Colors.white70),
                   onPressed: () {
@@ -114,26 +125,26 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                     );
                   },
                 ),
-                // TextField
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      hintStyle: const TextStyle(color: Colors.white54),
-                      filled: true,
-                      fillColor: Colors.white10,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                ),
-                // Mic icon
+               Expanded(
+  child: TextField(
+    controller: _messageController,
+    style: const TextStyle(color: Colors.white),
+    onSubmitted: (_) => _sendMessage(),  // <--- ADD THIS LINE
+    decoration: InputDecoration(
+      hintText: 'Type a message...',
+      hintStyle: const TextStyle(color: Colors.white54),
+      filled: true,
+      fillColor: Colors.white10,
+      contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(25),
+        borderSide: BorderSide.none,
+      ),
+    ),
+  ),
+),
+
                 IconButton(
                   icon: const Icon(Icons.mic, color: Colors.white70),
                   onPressed: () {
@@ -144,7 +155,6 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                     );
                   },
                 ),
-                // Send icon
                 IconButton(
                   icon: const Icon(Icons.send, color: Colors.white),
                   onPressed: _sendMessage,
