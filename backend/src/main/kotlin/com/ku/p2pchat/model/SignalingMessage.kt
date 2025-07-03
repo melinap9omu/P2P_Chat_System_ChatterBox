@@ -1,5 +1,8 @@
 package org.example.com.ku.p2pchat.com.ku.p2pchat.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class SignalingMessage(
     val type: String, // e.g., "offer", "answer", "candidate", "user_online", "user_offline", "online_users_list", "chat_message", "error"
     val payload: String? = null, // SDP or ICE data for WebRTC negotiation

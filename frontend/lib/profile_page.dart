@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'chat_page.dart';
-import 'friend_page.dart';
+// import 'friend_page.dart'; // REMOVED: This import is no longer needed
 import 'login_page.dart';
 import 'change_password_page.dart';
 import 'setting_page.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+  // Added currentUserid as a required parameter
+  // This is needed because ChatPage now requires it.
+  final int currentUserid;
+  const ProfilePage({super.key, required this.currentUserid});
 
   @override
   Widget build(BuildContext context) {
+    // Keep selectedIndex as 2, as Profile is still the 3rd tab (index 2)
     const selectedIndex = 2;
 
+    // Keep labels and icons as they were, to preserve the UI
     final List<String> labels = ['Chat', 'Friends', 'Profile'];
     final List<IconData> icons = [
       Icons.chat_bubble_outline,
-      Icons.group_outlined,
+      Icons.group_outlined, // Icon for 'Friends' tab remains
       Icons.person_outline
     ];
 
@@ -46,7 +51,7 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Your name',
+              'Your name', // You might want to display the actual user name here
               style: GoogleFonts.almarai(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
@@ -55,7 +60,7 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'dinisha@example.com',
+              'dinisha@example.com', // You might want to display the actual user email here
               style: GoogleFonts.almarai(
                 fontSize: 14,
                 color: Colors.white60,
@@ -89,24 +94,29 @@ class ProfilePage extends StatelessWidget {
               top: 0,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // List.generate(3, ...) remains unchanged to keep 3 tabs
                 children: List.generate(3, (index) {
                   final isSelected = selectedIndex == index;
                   return GestureDetector(
                     onTap: () {
-                      if (index == 0) {
+                      if (index == 0) { // Chat tab
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const ChatPage()),
+                          // Pass currentUserid to ChatPage
+                          MaterialPageRoute(builder: (context) => ChatPage(currentUserid: currentUserid)),
                         );
-                      } else if (index == 1) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => const FriendPage()),
-                        );
+                      } else if (index == 1) { // Friends tab
+                        // REMOVED: Navigation to FriendPage
+                        // You can add a print statement or a SnackBar here if you want feedback
+                        print('Friends tab tapped, but FriendPage functionality is removed.');
+                        // ScaffoldMessenger.of(context).showSnackBar(
+                        //   const SnackBar(content: Text('Friends feature coming soon!')),
+                        // );
                       }
+                      // index == 2 is the Profile tab, which is the current page, so no navigation needed for it.
                     },
                     child: SizedBox(
-                      width: MediaQuery.of(context).size.width / 3,
+                      width: MediaQuery.of(context).size.width / 3, // Remains divided by 3 for 3 tabs
                       child: Column(
                         children: [
                           const SizedBox(height: 8),
@@ -192,7 +202,7 @@ class ProfileOption extends StatelessWidget {
                   const Divider(color: Colors.white24),
                   ListTile(
                     leading:
-                        const Icon(Icons.delete_outline, color: Colors.redAccent),
+                    const Icon(Icons.delete_outline, color: Colors.redAccent),
                     title: Text('Delete Profile',
                         style: GoogleFonts.almarai(color: Colors.redAccent)),
                     onTap: () {
@@ -246,7 +256,7 @@ class ProfileOption extends StatelessWidget {
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => const LoginPage()),
-            (route) => false,
+                (route) => false,
           );
         }
       },

@@ -10,6 +10,7 @@ import '../config/app_config.dart';
 import 'profile_page.dart';
 import 'chatdetail_page.dart';
 import '../model/user.dart';
+// import 'friend_page.dart'; // REMOVED: This import is no longer needed
 
 class ChatPage extends StatefulWidget {
   final int currentUserid;
@@ -34,12 +35,13 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 0; // Remains 0 for Chat tab initially
 
+  // Keep labels and icons as they were, to preserve the UI
   final List<String> labels = ['Chat', 'Friends', 'Profile'];
   final List<IconData> icons = [
     Icons.chat_bubble_outline,
-    Icons.group_outlined,
+    Icons.group_outlined, // Icon for 'Friends' tab remains
     Icons.person_outline
   ];
 
@@ -205,8 +207,8 @@ class _ChatPageState extends State<ChatPage> {
                       MaterialPageRoute(
                         builder: (context) => ChatDetailPage(
                           currentUserId: widget.currentUserid,
-                          peerId: peerUser.id,           // Corrected: Pass peer's ID
-                          peerName: peerUser.fullName, // Corrected: Use peerName and pass peer's full name
+                          peerId: peerUser.id,
+                          peerName: peerUser.fullName,
                           // Removed webRtcClient and signalingClient as ChatDetailPage will manage its own
                         ),
                       ),
@@ -265,30 +267,38 @@ class _ChatPageState extends State<ChatPage> {
               top: 0,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // List.generate(3, ...) remains unchanged to keep 3 tabs
                 children: List.generate(3, (index) {
                   final isSelected = _selectedIndex == index;
                   return GestureDetector(
                     onTap: () {
-                      if (index == 1) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const FriendPage()),
-                        );
-                      } else if (index == 2) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const ProfilePage()),
-                        );
-                      } else {
+                      if (index == 0) { // Chat tab (current page)
+                        // No navigation needed, just update selected index if desired
                         setState(() {
                           _selectedIndex = index;
                         });
+                      } else if (index == 1) { // Friends tab
+                        // REMOVED: Navigation to FriendPage
+                        // The UI remains, but tapping this tab will now do nothing
+                        print('Friends tab tapped, but functionality is removed.');
+                        // You could add a SnackBar here to inform the user:
+                        // ScaffoldMessenger.of(context).showSnackBar(
+                        //   const SnackBar(content: Text('Friends feature not available yet!')),
+                        // );
+                      } else if (index == 2) { // Profile tab
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            // Pass current user ID and username to ProfilePage
+                              builder: (context) => ProfilePage(
+                                currentUserid: widget.currentUserid,
+                                currentUsername: widget.currentUsername,
+                              )),
+                        );
                       }
                     },
                     child: SizedBox(
-                      width: MediaQuery.of(context).size.width / 3,
+                      width: MediaQuery.of(context).size.width / 3, // Remains divided by 3 for 3 tabs
                       child: Column(
                         children: [
                           const SizedBox(height: 8),
