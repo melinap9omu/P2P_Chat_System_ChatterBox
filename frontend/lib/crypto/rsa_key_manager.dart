@@ -2,54 +2,66 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart'; // Unused, can be removed
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/asymmetric/api.dart';
 import 'package:pointycastle/asymmetric/rsa.dart';
-import 'package:pointycastle/export.dart'; // THIS LINE IS CRUCIAL AND SHOULD RESOLVE IT
-
-import 'package:pointycastle/export.dart' as pc;
+import 'package:pointycastle/export.dart'; // Crucial and correct
+import 'package:pointycastle/export.dart' as pc; // Alias also correct
 import 'package:asn1lib/asn1lib.dart';
 
 
 pc.SecureRandom createSecureRandom() {
   final sr = pc.FortunaRandom();
   final seed =Uint8List.fromList(
-    List<int>.generate(32,(_)=> Random.secure().nextInt(256))
+      List<int>.generate(32,(_)=> Random.secure().nextInt(256))
   );
   sr.seed(pc.KeyParameter(seed));
   return sr;
 }
-class RsaKeyManager{
-  static const _storage =FlutterSecureStorage();
-  static const _privateKeyStorageKey = 'rsa_private_key_pkcs8_base64';
-  static const _publicKeyStorageKey = 'rsa_public_key_x509_base64';
+
+class RsaKeyManager {
+  static const _storage = FlutterSecureStorage();
+  // Removed fixed storage keys
   static const int _rsaKeySize = 2048;
 
-  static Future<pc.AsymmetricKeyPair<pc.RSAPublicKey, pc.RSAPrivateKey>> generateOrGetRSAKeyPair() async{
-    String? privateKeyBASe64 = await _storage.read(key: _privateKeyStorageKey);
-    String? publicKeyBAse64 = await _storage.read(key: _publicKeyStorageKey);
+  // Static helper methods to create user-specific storage keys
+  static String _getPrivateKeyStorageKey(int userId) => 'rsa_private_key_pkcs8_base64_$userId';
+  static String _getPublicKeyStorageKey(int userId) => 'rsa_public_key_x509_base64_$userId';
 
-    if (privateKeyBASe64 != null && publicKeyBAse64!=null){
-      print('Retrieved existing  RSA pair form secure storage.');
-      final privateKey = RsaKeyConverter.decodePrivateKeyFromPkcs8Base64(privateKeyBASe64);
-      final publicKey = RsaKeyConverter.decodePublicKeyFromX509Base64(publicKeyBAse64);
+  // The init method is still a placeholder for general manager readiness
+  static Future<void> init() async {
+    print("RsaKeyManager initialized.");
+    // No user-specific logic here, as userId is not available globally at this stage
+  }
 
-      if (privateKey!=null && publicKey!=null){
+  // Renamed and modified to be user-specific as per our earlier discussion
+  static Future<pc.AsymmetricKeyPair<pc.RSAPublicKey, pc.RSAPrivateKey>> generateKeyPairIfNotExist(int userId) async {
+    final privateKeyStorageKey = _getPrivateKeyStorageKey(userId);
+    final publicKeyStorageKey = _getPublicKeyStorageKey(userId);
+
+    String? privateKeyBase64 = await _storage.read(key: privateKeyStorageKey);
+    String? publicKeyBase64 = await _storage.read(key: publicKeyStorageKey);
+
+    if (privateKeyBase64 != null && publicKeyBase64 != null) {
+      print('Retrieved existing RSA key pair for user $userId from secure storage.');
+      final privateKey = RsaKeyConverter.decodePrivateKeyFromPkcs8Base64(privateKeyBase64);
+      final publicKey = RsaKeyConverter.decodePublicKeyFromX509Base64(publicKeyBase64);
+
+      if (privateKey != null && publicKey != null) {
         return pc.AsymmetricKeyPair(publicKey, privateKey);
+      } else {
+        print('Stored keys for user $userId are corrupted, regenerating.');
+        await _storage.delete(key: privateKeyStorageKey);
+        await _storage.delete(key: publicKeyStorageKey);
       }
-      else{
-        print('Stored keys are corrupted, regenrating.');
-        await _storage.delete(key: _privateKeyStorageKey);
-        await _storage.delete(key: _publicKeyStorageKey);
-      }
-
     }
-    print('Generating new RSA key pair and storing in secure storage.');
+
+    print('Generating new RSA key pair for user $userId and storing in secure storage.');
 
     final rsaGen = pc.RSAKeyGenerator();
-    final keyParams = pc.RSAKeyGeneratorParameters(BigInt.parse('65537'), _rsaKeySize,64);
+    final keyParams = pc.RSAKeyGeneratorParameters(BigInt.parse('65537'), _rsaKeySize, 64);
 
     rsaGen.init(pc.ParametersWithRandom(keyParams, createSecureRandom()));
 
@@ -60,30 +72,32 @@ class RsaKeyManager{
     final generatedPrivateKeyBase64 = RsaKeyConverter.encodePrivateKeyToPkcs8Base64(rsaPrivateKey);
     final generatedPublicKeyBase64 = RsaKeyConverter.encodePublicKeyToX509Base64(rsaPublicKey);
 
-    await _storage.write(key: _privateKeyStorageKey, value: generatedPrivateKeyBase64);
-    await _storage.write(key: _publicKeyStorageKey, value: generatedPublicKeyBase64);
+    await _storage.write(key: privateKeyStorageKey, value: generatedPrivateKeyBase64);
+    await _storage.write(key: publicKeyStorageKey, value: generatedPublicKeyBase64);
 
-    print('New RSA key pair generated and stored successfully.');
-    return pc.AsymmetricKeyPair(rsaPublicKey,rsaPrivateKey );
+    print('New RSA key pair generated and stored successfully for user $userId.');
+    return pc.AsymmetricKeyPair(rsaPublicKey, rsaPrivateKey);
+  }
 
+  // Modified to be user-specific
+  static Future<String?> getPublicKeyX509Base64(int userId) async {
+    return await _storage.read(key: _getPublicKeyStorageKey(userId));
   }
-  static Future<String?> getPublicKeyX509Base64() async {
-    return await _storage.read(key: _publicKeyStorageKey);
-  }
-  static Future<pc.RSAPrivateKey?> getPrivateKey() async {
-    final privateKeyBase64 = await _storage.read(key: _privateKeyStorageKey);
+
+  // Modified to be user-specific
+  static Future<pc.RSAPrivateKey?> getPrivateKey(int userId) async {
+    final privateKeyBase64 = await _storage.read(key: _getPrivateKeyStorageKey(userId));
     return privateKeyBase64 != null ? RsaKeyConverter.decodePrivateKeyFromPkcs8Base64(privateKeyBase64) : null;
   }
+
+  // This method remains unchanged as it's for decoding *remote* public keys (which don't belong to the current user)
   static pc.RSAPublicKey? decodeRemotePublicKeyFromX509Base64(String x509Base64) {
     return RsaKeyConverter.decodePublicKeyFromX509Base64(x509Base64);
   }
-
-
-
 }
 
+// RsaKeyConverter class remains unchanged as you provided it.
 class RsaKeyConverter {
-
   static final ASN1ObjectIdentifier rsaEncryptionOid = ASN1ObjectIdentifier(
       [1, 2, 840, 113549, 1, 1, 1]);
 
@@ -104,7 +118,6 @@ class RsaKeyConverter {
     topLevelSeq.add(bitString);
 
     final derBytes = Uint8List.fromList(topLevelSeq.encodedBytes);
-
 
     return base64.encode(derBytes);
   }
@@ -149,7 +162,6 @@ class RsaKeyConverter {
     }
   }
 
-
   static String encodePrivateKeyToPkcs8Base64(pc.RSAPrivateKey privateKey) {
     final pkcs1PrivateKySeq = ASN1Sequence();
     pkcs1PrivateKySeq.add(ASN1Integer(BigInt.from(0)));
@@ -190,7 +202,6 @@ class RsaKeyConverter {
 
       final ASN1OctetString octerStringPrivateKey = pkcs8Seq.elements[2] as ASN1OctetString;
 
-
       // Parse the inner PKCS#1 RSA Private Key sequence
       final ASN1Sequence rsaPrivateKeyPkcs1Seq = ASN1Sequence.fromBytes(octerStringPrivateKey.contentBytes());
 
@@ -202,15 +213,10 @@ class RsaKeyConverter {
       final BigInt privateExponent = (rsaPrivateKeyPkcs1Seq.elements[3] as ASN1Integer).valueAsBigInteger;
       final BigInt prime1 = (rsaPrivateKeyPkcs1Seq.elements[4] as ASN1Integer).valueAsBigInteger;
       final BigInt prime2 = (rsaPrivateKeyPkcs1Seq.elements[5] as ASN1Integer).valueAsBigInteger;
-      return pc.RSAPrivateKey(modulus, privateExponent, prime1, prime2); // Return pc.RSAPrivateKey
+      return pc.RSAPrivateKey(modulus, privateExponent, prime1, prime2);
     } catch (e) {
       print('Error decoding private key from PKCS#8 Base64: $e');
       return null;
     }
   }
-
-
-
-
-
 }

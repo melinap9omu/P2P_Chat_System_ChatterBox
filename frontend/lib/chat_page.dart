@@ -1,11 +1,33 @@
+import 'dart:convert';
+import 'dart:async'; // Added for Future.delayed in mock fetch
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
-import 'friend_page.dart';
+
+
+import '../config/app_config.dart';
 import 'profile_page.dart';
 import 'chatdetail_page.dart';
+import '../model/user.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key});
+  final int currentUserid;
+  final String currentUsername;
+  // Removed webRtcClient and signalingClient from ChatPage constructor
+  // final WebRtcClient webRtcClient;
+  // final SignalingClient signalingClient;
+  final VoidCallback onLogout;
+
+  const ChatPage({
+    super.key,
+    required this.currentUserid,
+    required this.currentUsername,
+    // Removed webRtcClient and signalingClient from ChatPage constructor
+    // required this.webRtcClient,
+    // required this.signalingClient,
+    required this.onLogout,
+  });
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -23,47 +45,79 @@ class _ChatPageState extends State<ChatPage> {
 
   final TextEditingController _searchController = TextEditingController();
 
-  List<Map<String, String>> allChats = [
-    {'name': 'Jonas', 'message': 'How are you?', 'time': '2 min ago'},
-    {'name': 'Ethan', 'message': 'Hi!', 'time': '15 min ago'},
-    {'name': 'Oliver', 'message': "What's up?", 'time': '1 hour ago'},
-    {'name': 'Olivia', 'message': 'See u tomorrow', 'time': '9 hour ago'},
-    {'name': 'John', 'message': 'See u tomorrow', 'time': '1 day ago'},
-    {'name': 'Lily', 'message': 'See u tomorrow', 'time': '5 day ago'},
-  ];
+  List<User> _allOnlineUsers = [];
+  List<User> _filteredOnlineUsers = [];
 
+  bool _isLoadingUsers = true;
+  String? _userFetchError;
+
+  // Assuming filteredChats is for a different purpose or will be populated later
   List<Map<String, String>> filteredChats = [];
 
   @override
   void initState() {
     super.initState();
-    filteredChats = List.from(allChats); // Initially show all chats
-    _searchController.addListener(_searchChats); // Listen for changes
+    _searchController.addListener(_searchUsers);
+    _fetchOnlineUsers();
   }
 
-  void _searchChats() {
+  Future<void> _fetchOnlineUsers() async {
+    setState(() {
+      _isLoadingUsers = true;
+      _userFetchError = null;
+    });
+
+    try {
+      final response = await http.get(
+        Uri.parse('$SERVER_HTTP_BASE_URL/users/online'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = jsonDecode(response.body);
+        final List<User> fetchedUsers = jsonList
+            .map((json) => User.fromJson(json))
+            .where((user) => user.id != widget.currentUserid)
+            .toList();
+
+        setState(() {
+          _allOnlineUsers = fetchedUsers;
+          _searchUsers(); // Filter users after fetching
+          _isLoadingUsers = false;
+        });
+        print(
+            'Fetched online users: ${_allOnlineUsers.map((u) => u.fullName).join(', ')}');
+      } else {
+        final Map<String, dynamic> errorData = jsonDecode(response.body);
+        setState(() {
+          _userFetchError =
+              errorData['message'] ?? 'Failed to fetch online users.';
+          _isLoadingUsers = false;
+        });
+        print(
+            'Failed to fetch online users: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      setState(() {
+        _userFetchError = 'Network error: $e';
+        _isLoadingUsers = false;
+      });
+      print('Error fetching online users: $e');
+    }
+  }
+
+  void _searchUsers() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      filteredChats = allChats
-          .where((chat) => chat['name']!.toLowerCase().contains(query))
+      _filteredOnlineUsers = _allOnlineUsers
+          .where((user) => user.fullName.toLowerCase().contains(query))
           .toList();
-    });
-  }
-
-  void _loadMoreChats() {
-    setState(() {
-      allChats.addAll([
-        {'name': 'Sophia', 'message': 'Let\'s catch up!', 'time': '6 day ago'},
-        {'name': 'Noah', 'message': 'Yo!', 'time': '7 day ago'},
-        {'name': 'Emma', 'message': 'Nice to meet you.', 'time': '8 day ago'},
-      ]);
-      _searchChats(); // Update filter with existing query
     });
   }
 
   @override
   void dispose() {
-    _searchController.dispose(); // Clean up the controller
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -71,9 +125,31 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 25, 25, 25),
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 14, 14, 14),
+        title: Text(
+          'Chat - ${widget.currentUsername}',
+          style: GoogleFonts.almarai(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: _fetchOnlineUsers,
+            tooltip: 'Refresh Online Users',
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: widget.onLogout,
+            tooltip: 'Logout',
+          ),
+        ],
+      ),
       body: Column(
         children: [
-          const SizedBox(height: 60),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
@@ -82,72 +158,97 @@ class _ChatPageState extends State<ChatPage> {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.white12,
-                hintText: 'Search users or chats...',
+                hintText: 'Search users...',
                 hintStyle: const TextStyle(color: Colors.white60),
+                prefixIcon: const Icon(Icons.search, color: Colors.white60),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               ),
             ),
           ),
           Expanded(
-            child: filteredChats.isEmpty
+            child: _isLoadingUsers
                 ? const Center(
-                    child: Text(
-                      'No matching chats.',
-                      style: TextStyle(color: Colors.white60),
-                    ),
-                  )
+              child: CircularProgressIndicator(color: Color(0xFF622F8A)),
+            )
+                : _userFetchError != null
+                ? Center(
+              child: Text(
+                _userFetchError!,
+                style: const TextStyle(
+                    color: Colors.redAccent, fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+            )
+                : _filteredOnlineUsers.isEmpty
+                ? Center(
+              child: Text(
+                _searchController.text.isEmpty
+                    ? 'No other users online.'
+                    : 'No matching users found.',
+                style: const TextStyle(
+                    color: Colors.white60, fontSize: 16),
+              ),
+            )
                 : ListView.builder(
-                    itemCount: filteredChats.length,
-                    itemBuilder: (context, index) {
-                      final chat = filteredChats[index];
-                    return InkWell(
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ChatDetailPage(userName: chat['name']!),
-      ),
-    );
-  },
-  child: ListTile(
-    leading: const CircleAvatar(
-      backgroundColor: Colors.white24,
-      child: Icon(Icons.person, color: Colors.white70),
-    ),
-    title: Text(
-      chat['name']!,
-      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-    ),
-    subtitle: Text(
-      chat['message']!,
-      style: const TextStyle(color: Colors.white60),
-    ),
-    trailing: Text(
-      chat['time']!,
-      style: const TextStyle(color: Colors.white38, fontSize: 12),
-    ),
-  ),
-);
-
-                    },
+              itemCount: _filteredOnlineUsers.length,
+              itemBuilder: (context, index) {
+                final peerUser = _filteredOnlineUsers[index];
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatDetailPage(
+                          currentUserId: widget.currentUserid,
+                          peerId: peerUser.id,           // Corrected: Pass peer's ID
+                          peerName: peerUser.fullName, // Corrected: Use peerName and pass peer's full name
+                          // Removed webRtcClient and signalingClient as ChatDetailPage will manage its own
+                        ),
+                      ),
+                    );
+                  },
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.white24,
+                      child: Text(
+                        peerUser.firstname.isNotEmpty
+                            ? peerUser.firstname[0].toUpperCase()
+                            : '?',
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    title: Text(
+                      peerUser.fullName,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      'Online (ID: ${peerUser.id})',
+                      style: const TextStyle(
+                          color: Colors.greenAccent,
+                          fontSize: 13),
+                    ),
+                    trailing: const Icon(Icons.circle,
+                        color: Colors.greenAccent, size: 12),
                   ),
+                );
+              },
+            ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _loadMoreChats,
-        backgroundColor: Colors.white,
-        child: const Icon(Icons.add, color: Color(0xFF622F8A)),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: Container(
         height: 90,
         decoration: const BoxDecoration(
-          color: const Color.fromARGB(255, 25, 25, 25),
+          color: Color.fromARGB(255, 25, 25, 25),
         ),
         child: Stack(
           alignment: Alignment.topCenter,
@@ -157,7 +258,7 @@ class _ChatPageState extends State<ChatPage> {
               child: Container(
                 width: MediaQuery.of(context).size.width,
                 height: 70,
-                 color: const Color.fromARGB(255, 14, 14, 14),
+                color: const Color.fromARGB(255, 14, 14, 14),
               ),
             ),
             Positioned(

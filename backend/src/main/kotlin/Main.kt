@@ -11,6 +11,7 @@ import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.userLoginController
 import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.PublicKeyController
 import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.SignalingSocket
 import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.signalControllee
+import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.OnlineUsersController
 
 import org.example.com.ku.p2pchat.registerController
 import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.UserListServlet
@@ -46,6 +47,9 @@ fun main() {
 
     val userListServlet= ServletHolder(UserListServlet())
     context.addServlet(userListServlet,"/login")
+
+    val userOnlineUsersController = ServletHolder(OnlineUsersController())
+    context.addServlet(userOnlineUsersController, "/users/online")
 
     val authFilter= FilterHolder(AuthFilter())
     context.addFilter(authFilter,"/*", EnumSet.of(DispatcherType.REQUEST))

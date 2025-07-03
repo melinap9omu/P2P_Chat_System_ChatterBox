@@ -61,74 +61,155 @@ class signalControllee : JettyWebSocketServlet(){
 
 
 @WebSocket
-class SignalingSocket (private val user: user){
+class SignalingSocket(private val user: user) { // The 'user' object should contain at least 'id', 'FirstName', and 'LastName'
     private lateinit var session: Session
-    private val gson=Gson()
+    private val gson = Gson()
 
     @OnWebSocketConnect
-    fun onConnect(session:Session){
+    fun onConnect(session: Session) {
         this.session = session
-        sessionController.addSession(user,session)
-        println("user ${user.email} (ID:${user.id}) WebSocket connected")
+        sessionController.addSession(user, session) // Use your 'sessionController' object
+        println("User ${user.FirstName} (${user.id}) WebSocket connected.")
+
+        // 1. Send the newly connected user the initial list of all currently online users
+        val onlineUsers = sessionController.getAllOnlineUsers().map { onlineUser ->
+            mapOf(
+                "userId" to onlineUser.id,
+                "username" to "${onlineUser.FirstName} ${onlineUser.LastName}" // Use First and Last Name
+            )
+        }.toList()
+
+        val initialListMessage = SignalingMessage(
+            type = "online_users_list",
+            onlineUsers = onlineUsers,
+            message = "Current online users list for ${user.FirstName} ${user.LastName}"
+        )
+        try {
+            session.remote.sendString(gson.toJson(initialListMessage))
+            println("Sent initial online users list to user ${user.id}.")
+        } catch (e: Exception) {
+            System.err.println("Error sending initial online users list to user ${user.id}: ${e.message}")
+            e.printStackTrace()
+        }
+
+        // 2. Broadcast "user online" message to all *other* online users
+        val userOnlineMessage = SignalingMessage(
+            type = "user_online",
+            senderUserId = user.id,
+            senderUsername = "${user.FirstName} ${user.LastName}", // Use First and Last Name
+            message = "${user.FirstName} ${user.LastName} is now online."
+        )
+        sessionController.broadcastMessage(
+            userOnlineMessage,
+            excludeUserId = user.id
+        ) // Use your 'sessionController' object
     }
 
     @OnWebSocketMessage
-    fun onMessage(message: String?){
-        if (message==null){
+    fun onMessage(message: String?) {
+        if (message == null) {
             return
         }
-        println("Received message from User ${user.id}:$message")
+        println("Received message from User ${user.id}: $message")
 
-        try{
+        try {
             val signalingMessage = gson.fromJson(message, SignalingMessage::class.java)
-            val fullSignalingMessage = signalingMessage.copy(senderUserId = user.id)
-            val messageToSend = gson.toJson(fullSignalingMessage)
 
-            signalingMessage.targetUserId?.let{targetId->
-                val targetSession= sessionController.getSession(targetId)
-                if (targetSession !=null && targetSession.isOpen){
-                    targetSession.remote.sendString(messageToSend)
-                    println("Relayed '${signalingMessage.type} from user ${user.id}")
+            // Handle various message types: WebRTC signaling, chat messages, etc.
+            if (signalingMessage.type == "offer" ||
+                signalingMessage.type == "answer" ||
+                signalingMessage.type == "candidate" ||
+                signalingMessage.type == "chat_message" ||
+                signalingMessage.type == "file_metadata"
+            ) {
+                // Enrich the message with sender's info before relaying
+                val fullSignalingMessage = signalingMessage.copy(
+                    senderUserId = user.id,
+                    senderUsername = "${user.FirstName} ${user.LastName}" // Use First and Last Name
+                )
+                val messageToSend = gson.toJson(fullSignalingMessage)
+
+                signalingMessage.targetUserId?.let { targetId ->
+                    val targetSession = sessionController.getSession(targetId) // Use your 'sessionController' object
+                    if (targetSession != null && targetSession.isOpen) {
+                        targetSession.remote.sendString(messageToSend)
+                        println("Relayed '${signalingMessage.type}' from user ${user.id} to $targetId.")
+                    } else {
+                        System.err.println("Target user $targetId is offline or session not open. Cannot relay '${signalingMessage.type}' from user ${user.id}.")
+                        this.session.remote.sendString(
+                            gson.toJson(
+                                SignalingMessage(
+                                    type = "error",
+                                    message = "User $targetId is offline or unavailable.",
+                                    targetUserId = user.id
+                                )
+                            )
+                        )
+                    }
+                } ?: run {
+                    System.err.println("Received message from user ${user.id} without targetUserId for type '${signalingMessage.type}'. Message: $message")
+                    this.session.remote.sendString(
+                        gson.toJson(
+                            SignalingMessage(
+                                type = "error",
+                                message = "Missing targetUserId in signaling message of type '${signalingMessage.type}'."
+                            )
+                        )
+                    )
                 }
-                else{
-                    println("Target user $targetId is offline or session not open. Cannot relay '${signalingMessage.type}' from user ${user.id}")
-                }
-            } ?:run {
-                println("Received messge from user ${user.id} without targetUserId: $message")
-                this.session.remote.sendString(gson.toJson(mapOf("type" to "error", "message" to "Missing targetUserId in signaling message.")))
+            } else {
+                System.err.println("Received unknown or unhandled signaling message type from user ${user.id}: ${signalingMessage.type}. Message: $message")
+                this.session.remote.sendString(
+                    gson.toJson(
+                        SignalingMessage(
+                            type = "error",
+                            message = "Unknown message type: ${signalingMessage.type}"
+                        )
+                    )
+                )
             }
-
-        }
-        catch(e: Exception){
-            System.err.println("Error parsing or relaying webSocket mesaage from user ${user.id}")
+        } catch (e: Exception) {
+            System.err.println("Error parsing or relaying WebSocket message from user ${user.id}: ${e.message}")
             e.printStackTrace()
-            this.session.remote.sendString(gson.toJson(mapOf("type" to "error", "message" to "Invalid message format")))
+            this.session.remote.sendString(
+                gson.toJson(
+                    SignalingMessage(
+                        type = "error",
+                        message = "Invalid message format received."
+                    )
+                )
+            )
         }
-
     }
+
     @OnWebSocketClose
-    fun onClose(statusCode:Int, reason:String?){
+    fun onClose(statusCode: Int, reason: String?) {
         println("User ${user.id} WebSocket disconnected. Status: $statusCode, Reason: $reason")
-        sessionController.removeSession(user.id)
+        sessionController.removeSession(user.id) // Use your 'sessionController' object
+
+        // Broadcast "user offline" message to all remaining online users
+        val userOfflineMessage = SignalingMessage(
+            type = "user_offline",
+            senderUserId = user.id,
+            senderUsername = "${user.FirstName} ${user.LastName}", // Use First and Last Name
+            message = "${user.FirstName} ${user.LastName} is now offline."
+        )
+        sessionController.broadcastMessage(userOfflineMessage) // Use your 'sessionController' object
     }
 
     @OnWebSocketError
-    fun onError(cause: Throwable?){
-        System.err.println("User ${user.id} WebSocket error:${cause?.message}")
+    fun onError(cause: Throwable?) {
+        System.err.println("User ${user.id} WebSocket error: ${cause?.message}")
         cause?.printStackTrace()
-        sessionController.removeSession(user.id)
+        sessionController.removeSession(user.id) // Use your 'sessionController' object
 
+        // Broadcast "user offline" message due to error
+        val userOfflineMessage = SignalingMessage(
+            type = "user_offline",
+            senderUserId = user.id,
+            senderUsername = "${user.FirstName} ${user.LastName}", // Use First and Last Name
+            message = "${user.FirstName} ${user.LastName} went offline due to an error."
+        )
+        sessionController.broadcastMessage(userOfflineMessage) // Use your 'sessionController' object
     }
-
-
-
-
-
-
-
 }
-
-
-
-
-
