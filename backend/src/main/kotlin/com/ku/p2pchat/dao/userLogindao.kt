@@ -6,4 +6,5 @@ interface UserLogindao {
     fun login(number:String,password: String): user?
     fun findUserById(id:Int):user?
     fun updateUserPublicKey(user: user):Boolean
+    fun getAllUsers():List<user>
 }

@@ -3,47 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'chat_page.dart';
 import 'services/api_service.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
-class ApiService {
-  static const String baseUrl = 'https://c5ca-27-34-73-225.ngrok-free.app';
-
-  static Future<Map<String, dynamic>> register({
-    required String firstName,
-    required String lastName,
-    required String email,
-    required String number,
-    required String password,
-    required String rePassword,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/register'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'FirstName': firstName,
-          'LastName': lastName,
-          'email': email,
-          'PhoneNo': number,
-          'Password': password,
-          'RePassword': rePassword,
-        }),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return jsonDecode(response.body);
-      } else {
-        return {
-          'success': false,
-          'message': 'Server error: ${response.statusCode}',
-        };
-      }
-    } catch (e) {
-      return {'success': false, 'message': 'Network error: $e'};
-    }
-  }
-}
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -107,16 +66,14 @@ class _SignUpPageState extends State<SignUpPage> {
                   _buildTextField(
                     controller: _firstNameController,
                     hintText: 'First name',
-                    validator:
-                        (value) => value!.isEmpty ? 'Enter first name' : null,
+                    validator: (value) => value!.isEmpty ? 'Enter first name' : null,
                   ),
                   const SizedBox(height: 16),
 
                   _buildTextField(
                     controller: _lastNameController,
                     hintText: 'Last name',
-                    validator:
-                        (value) => value!.isEmpty ? 'Enter last name' : null,
+                    validator: (value) => value!.isEmpty ? 'Enter last name' : null,
                   ),
                   const SizedBox(height: 16),
 
@@ -126,11 +83,8 @@ class _SignUpPageState extends State<SignUpPage> {
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty) return 'Enter email';
-                      final emailRegex = RegExp(
-                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                      );
-                      if (!emailRegex.hasMatch(value))
-                        return 'Enter valid email';
+                      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                      if (!emailRegex.hasMatch(value)) return 'Enter valid email';
                       return null;
                     },
                   ),
@@ -141,8 +95,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     hintText: 'Phone number',
                     keyboardType: TextInputType.phone,
                     validator: (value) {
-                      if (value == null || value.isEmpty)
-                        return 'Enter phone number';
+                      if (value == null || value.isEmpty) return 'Enter phone number';
                       if (value.length < 7) return 'Enter valid phone number';
                       return null;
                     },
@@ -154,10 +107,8 @@ class _SignUpPageState extends State<SignUpPage> {
                     hintText: 'Password',
                     obscureText: !showPassword,
                     validator: (value) {
-                      if (value == null || value.isEmpty)
-                        return 'Enter password';
-                      if (value.length < 8)
-                        return 'Password must be at least 8 characters';
+                      if (value == null || value.isEmpty) return 'Enter password';
+                      if (value.length < 8) return 'Password must be at least 8 characters';
                       return null;
                     },
                   ),
@@ -168,10 +119,8 @@ class _SignUpPageState extends State<SignUpPage> {
                     hintText: 'Re-enter password',
                     obscureText: !showPassword,
                     validator: (value) {
-                      if (value == null || value.isEmpty)
-                        return 'Confirm your password';
-                      if (value != _passwordController.text)
-                        return 'Passwords do not match';
+                      if (value == null || value.isEmpty) return 'Confirm your password';
+                      if (value != _passwordController.text) return 'Passwords do not match';
                       return null;
                     },
                   ),
@@ -192,10 +141,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                       Text(
                         'Show password',
-                        style: GoogleFonts.almarai(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
+                        style: GoogleFonts.almarai(color: Colors.white70, fontSize: 14),
                       ),
                     ],
                   ),
@@ -271,7 +217,7 @@ class _SignUpPageState extends State<SignUpPage> {
         firstName: _firstNameController.text,
         lastName: _lastNameController.text,
         email: _emailController.text,
-        number: _phoneController.text,
+        phoneNo: _phoneController.text,
         password: _passwordController.text,
         rePassword: _confirmPasswordController.text,
       );
@@ -279,10 +225,7 @@ class _SignUpPageState extends State<SignUpPage> {
       if (result['success'] == true) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt('user_id', result['user']['id']);
-        await prefs.setString(
-          'user_name',
-          '${result['user']['FirstName']} ${result['user']['LastName']}',
-        );
+        await prefs.setString('user_name', '${result['user']['FirstName']} ${result['user']['LastName']}');
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Registration successful!')),
@@ -298,9 +241,9 @@ class _SignUpPageState extends State<SignUpPage> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     }
   }
 }

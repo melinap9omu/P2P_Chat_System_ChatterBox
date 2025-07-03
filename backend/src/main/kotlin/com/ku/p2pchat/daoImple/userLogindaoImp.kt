@@ -5,6 +5,9 @@ import at.favre.lib.crypto.bcrypt.BCrypt
 import org.example.com.ku.p2pchat.com.ku.p2pchat.model.user
 import java.sql.DriverManager
 import java.sql.Connection
+import org.example.com.ku.p2pchat.com.ku.p2pchat.database.DatabaseManager
+import java.sql.Statement
+import java.sql.ResultSet
 
 class userLogindaoImp: UserLogindao {
     private val jdbcUrl = "jdbc:mysql://localhost:3306/p2p_chat"
@@ -104,6 +107,39 @@ class userLogindaoImp: UserLogindao {
         }
 
     }
+    override fun getAllUsers(): List<user> {
+        val users = mutableListOf<user>()
+        var connection: Connection? = null
+        var statement: Statement? = null
+        var resultSet: ResultSet? = null
+        try {
+            connection = DatabaseManager.getConnection() // Get connection from DatabaseManager
+            val sql = "SELECT id, first_name, last_name, phone_no, email, password_hash, public_key_pem FROM register"
+            statement = connection.createStatement()
+            resultSet = statement.executeQuery(sql)
+
+            while (resultSet.next()) {
+                users.add(user(
+                    id = resultSet.getInt("id"),
+                    FirstName = resultSet.getString("first_name"),
+                    LastName = resultSet.getString("last_name"),
+                    PhoneNo = resultSet.getString("phone_no"),
+                    email = resultSet.getString("email"),
+                    hashPassword = resultSet.getString("password_hash"),
+                    publicKeyPem = resultSet.getString("public_key_pem")
+                ))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Handle exception
+        } finally {
+            resultSet?.close()
+            statement?.close()
+            connection?.close()
+        }
+        return users
+    }
+
 
 
 
