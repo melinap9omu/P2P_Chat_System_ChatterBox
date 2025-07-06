@@ -9,6 +9,11 @@ object DatabaseConnection {
     private const val username = "root"
     private const val password = "suniti@123"
 
+    init {
+        // Load the driver class explicitly once when this object is loaded
+        Class.forName("com.mysql.cj.jdbc.Driver")
+    }
+
     fun getConnection(): Connection {
         return DriverManager.getConnection(jdbcUrl, username, password)
     }

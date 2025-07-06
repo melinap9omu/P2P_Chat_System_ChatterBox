@@ -1,16 +1,9 @@
-package org.example.com.ku.p2pchat.com.ku.p2pchat.model
+package org.example.p2pchat.model
 
 open class userLogin {
-    private var number:String=""
-    private var password:String=""
+     var number:String=""
+     var password:String=""
+     var firstname: String = ""
+     var lastname: String = ""
 
-    fun getNumber(): String = number
-    fun setNumber(number: String) {
-        this.number = number
-    }
-
-    fun getPassword(): String= password
-    fun setPassword(password:String){
-        this.password=password
-    }
 }
