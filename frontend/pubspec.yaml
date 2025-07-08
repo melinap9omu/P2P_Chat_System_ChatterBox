@@ -7,34 +7,43 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # 1.WebRTC for Flutter
-  flutter_webrtc: ^0.11.7
-  # 2.WebSocket Client
+
+  # 1. WebRTC for Flutter
+  flutter_webrtc: ^0.14.2
+
+  # 2. WebSocket Client
   web_socket_channel: ^2.4.0
-  # 3.Cryptography (RSA, AES)
+
+  # 3. Cryptography (RSA, AES)
   pointycastle: ^3.7.3
   encrypt: ^5.0.1
-  # 4.Secure Storage (for RSA Private key)
+
+  # 4. Secure Storage (for RSA Private key)
   flutter_secure_storage: ^9.0.0
+
   # 5. JSON Serialization (for structured models)
   json_annotation: ^4.8.1
   freezed_annotation: ^2.4.1
-  # 6.HTTP Client (for public key upload and download and for login)
+
+  # 6. HTTP Client (for public key upload and download and for login)
   http: ^1.2.1
 
+  # Other packages
   asn1lib: ^1.1.0
-
   uuid: ^4.0.0
-
   path_provider: ^2.1.0
-
   image_picker: ^1.1.0
-
   permission_handler: ^11.3.1
 
+  open_filex : ^4.4.0
 
+  file_picker: ^10.2.0
+  dio: ^5.4.0
+  cookie_jar: ^4.0.8
+  dio_cookie_manager: ^3.0.0
 
   google_fonts: ^6.1.0
+  shared_preferences: ^2.2.2  # ✅ Moved inside dependencies
 
 dev_dependencies:
   flutter_test:
@@ -44,8 +53,5 @@ dev_dependencies:
   json_serializable: ^6.7.1
   freezed: ^2.4.1
 
-
 flutter:
-
   uses-material-design: true
-

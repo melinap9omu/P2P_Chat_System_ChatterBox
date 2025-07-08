@@ -12,7 +12,7 @@ import java.sql.ResultSet
 class userLogindaoImp: UserLogindao {
     private val jdbcUrl = "jdbc:mysql://localhost:3306/p2p_chat"
     private val username = "root"
-    private val dbPassword = "suniti@123"
+    private val dbPassword = "Krishtina12@"
 
     private fun getConnection() : java.sql.Connection {
         return DriverManager.getConnection(jdbcUrl, username, dbPassword)

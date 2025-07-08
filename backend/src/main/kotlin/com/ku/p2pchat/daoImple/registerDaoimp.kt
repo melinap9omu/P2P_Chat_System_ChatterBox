@@ -7,7 +7,7 @@ import java.sql.DriverManager
 class registerDaoimp: registerDao{
     private val jdbcUrl = "jdbc:mysql://localhost:3306/p2p_chat"
     private val username = "root"
-    private val password = "suniti@123"
+    private val password = "Krishtina12@"
 
   override  fun registerUser(user: user): Boolean {
         val sql = """

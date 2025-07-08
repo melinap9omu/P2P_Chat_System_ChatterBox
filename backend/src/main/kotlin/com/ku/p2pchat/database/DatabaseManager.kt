@@ -13,7 +13,7 @@ object DatabaseManager {
     // --- Configuration for MySQL (Uncomment and set your details for persistent storage) ---
     private const val JDBC_URL = "jdbc:mysql://localhost:3306/p2p_chat" // Your MySQL URL
     private const val DB_USERNAME = "root" // Your MySQL username
-    private const val DB_PASSWORD = "suniti@123" // Your MySQL password
+    private const val DB_PASSWORD = "Krishtina12@" // Your MySQL password
     private const val DB_DRIVER = "com.mysql.cj.jdbc.Driver" // MySQL JDBC Driver
 
     init {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/services.dart';
+
 
 class ChatDetailPage extends StatefulWidget {
   final String userName;
@@ -134,17 +136,23 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                   ),
                 ),
                 // Mic icon
-                IconButton(
-                  icon: const Icon(Icons.mic, color: Colors.white70),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Voice input not implemented'),
-                      ),
-                    );
-                  },
-                ),
-                // Send icon
+
+    static const platform = MethodChannel('com.example.videocall/channel');
+
+    IconButton(
+    icon: const Icon(Icons.videocam, color: Colors.white),
+    onPressed: () async {
+    try {
+    await platform.invokeMethod('startVideoCall', {
+    "username": widget.userName, // 👈 pass login username
+    });
+    } on PlatformException catch (e) {
+    print("Failed to start video call: ${e.message}");
+    }
+    },
+    ),
+
+    // Send icon
                 IconButton(
                   icon: const Icon(Icons.send, color: Colors.white),
                   onPressed: _sendMessage,
