@@ -8,48 +8,90 @@ import org.example.com.ku.p2pchat.com.ku.p2pchat.daoImple.forgetPassworddaoImp
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-
 @WebServlet("/forgetPassword")
-class forgetPasswordController: HttpServlet() {
-     private val dao= forgetPassworddaoImp()
+class forgetPasswordController : HttpServlet() {
+    private val dao = forgetPassworddaoImp()
 
     override fun doPost(req: HttpServletRequest, resp: HttpServletResponse) {
-     val action=req.getParameter("action")
-        val number=req.getParameter("number")?:return
-        val writen=resp.writer
+        resp.contentType = "application/json" // ✅ Important for Flutter to parse JSON
+        val writer = resp.writer
 
-        when(action){
-            "send-code"->{
-                if(dao.isNUmberExist(number)){
-                    val code=(1000..9999).random().toString()
-                    val expiry= LocalDateTime.now().plusMinutes(5).format(DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss"))
+        val action = req.getParameter("action")
+        val number = req.getParameter("number") ?: return
 
-                    dao.updateResetCode(number,code,expiry)
+        when (action) {
+            "send-code" -> {
+                if (dao.isNumberExist(number)) {
+                    val code = (1000..9999).random().toString()
+                    val expiry = LocalDateTime.now()
+                        .plusMinutes(5)
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) // ✅ Correct pattern
 
-                    // TODO: Send SMS here
-                    println("SMS sent to $number with code: $code") // Replace with SMS API
+                    dao.updateResetCode(number, code, expiry)
 
-                    writen.write("Code sent")
-                }
-                else{
-                    writen.write("Number not found")
+                    // Simulate SMS sending
+                    println("SMS sent to $number with code: $code")
 
+                    // ✅ Send JSON response
+                    writer.write(
+                        """
+                        {
+                          "success": true,
+                          "message": "Reset code generated",
+                          "code": "$code"
+                        }
+                        """.trimIndent()
+                    )
+                } else {
+                    writer.write(
+                        """
+                        {
+                          "success": false,
+                          "message": "Number not found"
+                        }
+                        """.trimIndent()
+                    )
                 }
             }
-            "resetPassword"->{
-                val code=req.getParameter("code")?:return
-                val newPassword=req.getParameter("newPassword")?:return
 
-                if(dao.varifyCode(number,code)){
-                    dao.updatePassword(number,newPassword)
+            "resetPassword" -> {
+                val code = req.getParameter("code") ?: return
+                val newPassword = req.getParameter("newPassword") ?: return
+
+                if (dao.varifyCode(number, code)) {
+                    dao.updatePassword(number, newPassword)
                     dao.clearResetcode(number)
-                    writen.write("password update sucessflly")
-                }
-                else{
-                    writen.write("Invalid or expired code")
+
+                    writer.write(
+                        """
+                        {
+                          "success": true,
+                          "message": "Password updated successfully"
+                        }
+                        """.trimIndent()
+                    )
+                } else {
+                    writer.write(
+                        """
+                        {
+                          "success": false,
+                          "message": "Invalid or expired code"
+                        }
+                        """.trimIndent()
+                    )
                 }
             }
-            else -> writen.write("Invalid action")
+
+            else -> {
+                writer.write(
+                    """
+                    {
+                      "success": false,
+                      "message": "Invalid action"
+                    }
+                    """.trimIndent()
+                )
+            }
         }
     }
 }

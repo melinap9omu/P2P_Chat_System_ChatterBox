@@ -34,6 +34,19 @@ object databaseTable {
                     println("ℹ️ 'public_key_pem' column probably already exists: ${e.message}")
                 }
 
+                val createProfileImageTable = """
+                    CREATE TABLE IF NOT EXISTS profile_image (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        userId INT NOT NULL UNIQUE,
+                        image_data LONGBLOB NOT NULL,
+                        FOREIGN KEY (userId) REFERENCES register(id) ON DELETE CASCADE
+                    );
+                """.trimIndent()
+
+                statement.execute(createProfileImageTable)
+                println("✅ 'profile_image' table initialized or already exists.")
+
+
                 // Create other tables
                 val createFilesTable = """
                     CREATE TABLE IF NOT EXISTS files (

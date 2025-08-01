@@ -2,27 +2,20 @@ package org.example.com.ku.p2pchat
 
 import com.ku.p2pchat.database.DatabaseConnection
 import jakarta.servlet.DispatcherType
+import jakarta.servlet.MultipartConfigElement // Correct import for MultipartConfigElement
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.ServletContextHandler
 import org.eclipse.jetty.servlet.ServletHolder
-import org.eclipse.jetty.websocket.server.config.JettyWebSocketServletContainerInitializer
-//import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.PublicKeyController
-
-import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.forgetPasswordController
-//import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.signalControllee
-import org.example.com.ku.p2pchat.com.ku.p2pchat.database.databaseTable
 import org.eclipse.jetty.servlets.CrossOriginFilter
+import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.forgetPasswordController
+import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.imageController
 import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.userLoginController
-//import org.example.com.ku.p2pchat.controller.UserLoginController
+import org.example.com.ku.p2pchat.com.ku.p2pchat.database.databaseTable
 import java.util.EnumSet
 
 fun main() {
-
-
     try {
-
-
-        // ✅ Connect to the database and initialize
+        // Connect to the database and initialize
         val connection = DatabaseConnection.getConnection()
         databaseTable.initializeDatabase(connection)
         println("✅ Database and tables initialized successfully")
@@ -51,30 +44,28 @@ fun main() {
         val forgetServlet = ServletHolder(forgetPasswordController())
         context.addServlet(forgetServlet, "/forgetPassword")
 
+        // Create MultipartConfigElement with temp directory and limits (adjust as needed)
+        val multipartConfig = MultipartConfigElement(
+            System.getProperty("java.io.tmpdir") ?: "/tmp", // Temporary directory for file uploads
+            10_485_760, // max file size (10MB)
+            20_971_520, // max request size (20MB)
+            1024 * 1024  // file size threshold after which file will be written to disk (1MB)
+        )
 
-        // Register the WebSocket servlet
-//        context.addServlet(signalControllee::class.java, "/signal")
+        // Register the image servlet and apply the MultipartConfigElement directly
+        val imageServlet = ServletHolder(imageController::class.java) // Use class reference
+        imageServlet.registration.setMultipartConfig(multipartConfig) // Correctly apply multipart config
+        context.addServlet(imageServlet, "/user/image")
 
-
-            // Attach context to server
+        // Attach context to server
         server.handler = context
-
-//// Add your servlets
-//        context.addServlet(ServletHolder(PublicKeyController()), "/public-key/*")
-
-
-        // Configure WebSocket for signalControllee
-//        JettyWebSocketServletContainerInitializer.configure(context) { servletContext, container ->
-//            container.addMapping("/signal/*", signalControllee::class.java)
-//        }
-
 
         println("🚀 Server started at http://localhost:8080")
         server.start()
         println("Jetty server started on port 8080")
         server.join()
-    }catch(e: Exception){
+    } catch(e: Exception) {
         println("❌ Failed to connect or initialize DB: ${e.message}")
-
+        e.printStackTrace() // Print full stack trace for better debugging
     }
 }
