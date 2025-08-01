@@ -9,11 +9,12 @@ import 'package:google_fonts/google_fonts.dart';
 import '../config/app_config.dart';
 import 'profile_page.dart';
 import 'chatdetail_page.dart';
+
 import '../model/user.dart';
 // import 'friend_page.dart'; // REMOVED: This import is no longer needed
 
 class ChatPage extends StatefulWidget {
-  final int currentUserid;
+  final String currentUserid;
   final String currentUsername;
 
   final VoidCallback onLogout;
@@ -140,12 +141,48 @@ class _ChatPageState extends State<ChatPage> {
             onPressed: _fetchOnlineUsers,
             tooltip: 'Refresh Online Users',
           ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: widget.onLogout,
-            tooltip: 'Logout',
+         IconButton(
+  icon: const Icon(Icons.logout, color: Colors.white),
+  onPressed: () async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E1E),
+        title: Text(
+          'Confirm Logout',
+          style: GoogleFonts.almarai(color: Colors.white),
+        ),
+        content: const Text(
+          'Are you sure you want to log out?',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(
+              'No',
+              style: TextStyle(color: Colors.white60),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(
+              'Yes',
+              style: TextStyle(color: Colors.redAccent),
+            ),
           ),
         ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      widget.onLogout();
+    }
+  },
+  tooltip: 'Logout',
+),
+        ],
+        centerTitle: true,
       ),
       body: Column(
         children: [
@@ -203,7 +240,7 @@ class _ChatPageState extends State<ChatPage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => ChatDetailPage(
-                          currentUserId: widget.currentUserid,
+                           currentUserid: widget.currentUserid,
                           peerId: peerUser.id,
                           peerName: peerUser.fullName,
                           // Removed webRtcClient and signalingClient as ChatDetailPage will manage its own

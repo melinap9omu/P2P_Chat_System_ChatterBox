@@ -10,10 +10,6 @@ dependencies:
 
   shared_preferences: ^2.2.2
   file_picker: ^6.2.1
- 
-  
-
-  
   crypton: ^2.0.1
 
   flutter_webrtc: ^0.14.2

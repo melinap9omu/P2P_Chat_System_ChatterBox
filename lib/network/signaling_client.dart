@@ -49,7 +49,7 @@ abstract class SignalingClientListener {
 /// Manages the WebSocket connection for signaling messages.
 class SignalingClient {
   // Added fields to match ChatDetailPage's constructor call
-  final int currentUserId;
+  final String currentUserId;
   final String serverWsUrl; // Renamed from signalingServerUrl to match your usage
   final String serverHttpBaseUrl; // Added to match your usage
 

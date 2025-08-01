@@ -20,8 +20,10 @@ import 'package:flutter_webrtc/flutter_webrtc.dart' as rtc; // Aliased to avoid 
 // MessageType enum and ChatMessage class (Keeping them here for self-containment as you had them)
 enum MessageType { text, file, notification }
 
+const String systemSenderId = 'system'; 
+
 class ChatMessage {
-  final int senderId;
+  final String senderId;
   final String content;
   final DateTime timestamp;
   final MessageType type;
@@ -41,13 +43,13 @@ class ChatMessage {
 
 
 class ChatDetailPage extends StatefulWidget {
-  final int currentUserId;
+  final String currentUserid;
   final int peerId;
   final String peerName; // Changed from userName to peerName as per constructor
 
   const ChatDetailPage({
     super.key,
-    required this.currentUserId,
+    required this.currentUserid,
     required this.peerId,
     required this.peerName, // Changed from userName
   });
@@ -82,7 +84,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> implements WebRtcClient
         _initializeClients(); // Initialize signaling and WebRTC clients
       } else {
         _addMessage(ChatMessage(
-          senderId: 0, // System message
+           senderId: systemSenderId,// System message
           content: 'Permissions not granted. Limited functionality.',
           timestamp: DateTime.now(),
           type: MessageType.notification,
@@ -137,20 +139,22 @@ class _ChatDetailPageState extends State<ChatDetailPage> implements WebRtcClient
 
   // Initialize Signaling and WebRTC Clients
  Future<void> _initializeClients() async {
-  final currentUserId = widget.currentUserId;
+  final currentUserId = widget.currentUserid;
 
 
   await RsaKeyManager.init();
 await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
 
   _signalingClient = SignalingClient(
-    currentUserId: currentUserId,
+    currentUserId: widget.currentUserid,
+
     serverWsUrl: SERVER_WS_URL,
     serverHttpBaseUrl: SERVER_HTTP_BASE_URL,
   );
 
   _webRtcClient = WebRtcClient(
-    currentUserId: currentUserId,
+    currentUserId: widget.currentUserid,
+
     signalingClient: _signalingClient,
     listener: this,
   );
@@ -161,14 +165,14 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
   // Register a listener for chat messages from this specific peer
   _webRtcClient.addChatMessageListener(widget.peerId, (senderId, message) {
     _addMessage(ChatMessage(
-      senderId: senderId,
+       senderId: systemSenderId,
       content: message,
       timestamp: DateTime.now(),
     ));
   });
 
   _addMessage(ChatMessage(
-    senderId:0,
+     senderId: systemSenderId,
     content: 'Connecting to signaling server...',
     timestamp: DateTime.now(),
     type: MessageType.notification,
@@ -217,7 +221,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
         _remoteRenderer.srcObject = null;
       });
       _addMessage(ChatMessage(
-        senderId: 0,
+         senderId: systemSenderId,
         content: 'Call ended with ${widget.peerName}.',
         timestamp: DateTime.now(),
         type: MessageType.notification,
@@ -225,7 +229,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
     } else {
       print('Initiating call with ${widget.peerName}');
       _addMessage(ChatMessage(
-        senderId: 0,
+         senderId: systemSenderId,
         content: 'Initiating call with ${widget.peerName}...',
         timestamp: DateTime.now(),
         type: MessageType.notification,
@@ -238,7 +242,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
       } catch (e) {
         print('Failed to initiate call: $e');
         _addMessage(ChatMessage(
-          senderId: 0,
+           senderId: systemSenderId,
           content: 'Failed to initiate call: $e',
           timestamp: DateTime.now(),
           type: MessageType.notification,
@@ -266,7 +270,8 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
     }
 
     _addMessage(ChatMessage(
-      senderId: widget.currentUserId,
+      senderId: widget.currentUserid,
+
       content: text,
       timestamp: DateTime.now(),
     ));
@@ -277,7 +282,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
     } catch (e) {
       print('Error sending message: $e');
       _addMessage(ChatMessage(
-        senderId:0,
+         senderId: systemSenderId,
         content: 'Failed to send message: $e',
         timestamp: DateTime.now(),
         type: MessageType.notification,
@@ -305,7 +310,8 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
         PlatformFile file = result.files.first;
         if (file.path != null) {
           _addMessage(ChatMessage(
-            senderId: widget.currentUserId,
+          senderId:widget.currentUserid,
+
             content: 'Sending file: ${file.name} (${(file.size / 1024).toStringAsFixed(2)} KB)',
             timestamp: DateTime.now(),
             type: MessageType.file,
@@ -319,7 +325,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
     } catch (e) {
       print('Error picking or sending file: $e');
       _addMessage(ChatMessage(
-        senderId:0,
+         senderId: systemSenderId,
         content: 'Failed to pick or send file: $e',
         timestamp: DateTime.now(),
         type: MessageType.notification,
@@ -338,7 +344,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
         _isCallActive = true;
       });
       _addMessage(ChatMessage(
-        senderId: 0,
+         senderId: systemSenderId,
         content: 'Connected to ${widget.peerName}.',
         timestamp: DateTime.now(),
         type: MessageType.notification,
@@ -356,7 +362,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
         _remoteRenderer.srcObject = null;
       });
       _addMessage(ChatMessage(
-        senderId: 0,
+         senderId: systemSenderId,
         content: 'Disconnected from ${widget.peerName}.',
         timestamp: DateTime.now(),
         type: MessageType.notification,
@@ -368,7 +374,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
  void onChatMessageReceived(int senderId, String message) {
   if (mounted && senderId == widget.peerId) {
     _addMessage(ChatMessage(
-      senderId: senderId,
+      senderId: systemSenderId,
       content: message,
       timestamp: DateTime.now(),
     ));
@@ -387,7 +393,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
       print('Connection State for ${widget.peerName}: $state');
       if (state == rtc.RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
         _addMessage(ChatMessage(
-          senderId: 0,
+           senderId: systemSenderId,
           content: 'WebRTC connection established.',
           timestamp: DateTime.now(),
           type: MessageType.notification,
@@ -396,7 +402,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
           state == rtc.RTCPeerConnectionState.RTCPeerConnectionStateDisconnected ||
           state == rtc.RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
         _addMessage(ChatMessage(
-          senderId:0,
+          senderId: systemSenderId,
           content: 'WebRTC connection disconnected or failed.',
           timestamp: DateTime.now(),
           type: MessageType.notification,
@@ -410,7 +416,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
     if (mounted) {
       print('WebRTC Error: $message');
       _addMessage(ChatMessage(
-        senderId:0,
+         senderId: systemSenderId,
         content: 'Error: $message',
         timestamp: DateTime.now(),
         type: MessageType.notification,
@@ -425,7 +431,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
         _keyExchangeComplete = true;
       });
       _addMessage(ChatMessage(
-        senderId: 0,
+        senderId: systemSenderId,
         content: 'Secure key exchange complete with ${widget.peerName}. You can now send encrypted messages.',
         timestamp: DateTime.now(),
         type: MessageType.notification,
@@ -455,7 +461,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
   void onFileMetadataReceived(int senderId, String fileId, String fileName, int fileSize, String fileType) {
     if (mounted && senderId == widget.peerId) {
       _addMessage(ChatMessage(
-        senderId: senderId,
+        senderId: senderId.toString(),
         content: 'Receiving file: $fileName (${(fileSize / 1024).toStringAsFixed(2)} KB)...',
         timestamp: DateTime.now(),
         type: MessageType.file,
@@ -477,7 +483,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
       if (index != -1) {
         setState(() {
           _messages[index] = ChatMessage(
-            senderId: senderId,
+            senderId: senderId.toString(),
             content: 'Received file: $fileName (Tap to open)',
             timestamp: DateTime.now(),
             type: MessageType.file,
@@ -487,7 +493,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
         });
       } else {
         _addMessage(ChatMessage(
-          senderId: senderId,
+          senderId: senderId.toString(),
           content: 'Received file: $fileName (Tap to open)',
           timestamp: DateTime.now(),
           type: MessageType.file,
@@ -496,7 +502,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
         ));
       }
       _addMessage(ChatMessage(
-        senderId: 0,
+        senderId: systemSenderId,
         content: 'File "$fileName" received successfully and saved to: $filePath',
         timestamp: DateTime.now(),
         type: MessageType.notification,
@@ -508,7 +514,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
   void onFileTransferError(String fileId, String message) {
     if (mounted) {
       _addMessage(ChatMessage(
-        senderId: 0,
+       senderId: systemSenderId,
         content: 'File transfer error for "$fileId": $message',
         timestamp: DateTime.now(),
         type: MessageType.notification,
@@ -557,7 +563,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
                   _messages.clear();
                 });
                 _addMessage(ChatMessage(
-                  senderId: 0,
+                  senderId: systemSenderId,
                   content: 'Chat cleared.',
                   timestamp: DateTime.now(),
                   type: MessageType.notification,
@@ -635,7 +641,7 @@ await RsaKeyManager.generateKeyPairIfNotExist(currentUserId.toString());
               itemCount: _messages.length, // Use _messages list
               itemBuilder: (context, index) {
                 final message = _messages[index];
-                final isMe = message.senderId == widget.currentUserId; // Determine if message is from current user
+                final isMe = message.senderId == widget.currentUserid; // Determine if message is from current user
 
                 Color bubbleColor = Colors.white10; // Default for others/notifications
                 Color textColor = Colors.white;

@@ -35,7 +35,7 @@ abstract class WebRtcClientListener {
 
 /// Manages WebRTC peer connection and data channel for a single peer.
 class WebRtcClient implements SignalingClientListener {
-  final int currentUserId;
+  final String currentUserId;
   final SignalingClient signalingClient;
   final WebRtcClientListener listener;
 
@@ -385,7 +385,7 @@ class WebRtcClient implements SignalingClientListener {
       print('Received and decoded public key for user $peerId.');
 
       // Only the peer with the lower ID generates and sends the AES key to avoid race conditions
-      if (currentUserId < peerId) {
+      if (int.parse(currentUserId) < peerId) {
         final aesKeyBase64 = SymmetricEncryptionManager.generateAesKeyBase64();
         print('Generated new AES key.');
 
@@ -395,7 +395,8 @@ class WebRtcClient implements SignalingClientListener {
         final keyExchangeMessage = SignalingMessage(
           type: 'aes_key_exchange',
           payload: encryptedAesKey,
-          senderUserId: currentUserId,
+          senderUserId: int.parse(currentUserId),
+
           targetUserId: peerId,
         );
         await channel.send(rtc.RTCDataChannelMessage(jsonEncode(keyExchangeMessage.toJson())));
@@ -465,7 +466,8 @@ final localPrivateKey = await RsaKeyManager.getPrivateKey(currentUserId.toString
       final chatMessage = SignalingMessage(
         type: 'chat_message',
         payload: encryptedMessage,
-        senderUserId: currentUserId,
+        senderUserId: int.parse(currentUserId),
+
         targetUserId: targetUserId,
       );
       await _dataChannel!.send(rtc.RTCDataChannelMessage(jsonEncode(chatMessage.toJson())));
@@ -519,7 +521,8 @@ final localPrivateKey = await RsaKeyManager.getPrivateKey(currentUserId.toString
       final metadataMessage = SignalingMessage(
         type: 'file_metadata',
         payload: encryptedMetadata, // Send encrypted metadata here
-        senderUserId: currentUserId,
+        senderUserId: int.parse(currentUserId),
+
         targetUserId: targetUserId,
       );
       await _dataChannel!.send(rtc.RTCDataChannelMessage(jsonEncode(metadataMessage.toJson())));
@@ -556,7 +559,7 @@ final localPrivateKey = await RsaKeyManager.getPrivateKey(currentUserId.toString
         listener.onFileChunkReceived(fileId, i + 1, totalChunks);
       }
       print('File $fileName (ID: $fileId) sent completely to $targetUserId.');
-      listener.onFileTransferComplete(fileId, fileName, currentUserId, filePath);
+      listener.onFileTransferComplete(fileId, fileName, int.parse(currentUserId), filePath);
     } catch (e) {
       print('Error sending file $filePath to $targetUserId: $e');
       listener.onError('Failed to send file: $e');

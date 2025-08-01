@@ -1,4 +1,4 @@
-const String NGROK_HTTP_URL = "https://4a0a-27-34-73-225.ngrok-free.app";
+const String NGROK_HTTP_URL = "https://2bfb0be202a2.ngrok-free.app";
 
 // Changed from 'const' to 'final' to allow the substring method call
 final String NGROK_WS_URL = "ws${NGROK_HTTP_URL.substring(5)}/signal";

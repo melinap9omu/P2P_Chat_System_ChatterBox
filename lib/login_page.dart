@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:p2p_chat/forget_password_page.dart';
 import 'package:p2p_chat/services/API_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'signup_page.dart';
@@ -101,7 +102,30 @@ class _LoginPageState extends State<LoginPage> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                const SizedBox(height: 8),
+
+// Forgot Password Button
+Align(
+  alignment: Alignment.centerRight,
+  child: TextButton(
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ForgotPasswordPage(),
+        ),
+      );
+    },
+    child: Text(
+      'Forgot Password?',
+      style: GoogleFonts.almarai(
+        color: const Color.fromARGB(255, 225, 178, 47),
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  ),
+),
 
                   // Remember Me
                   Row(
@@ -130,6 +154,7 @@ class _LoginPageState extends State<LoginPage> {
                     ],
                   ),
                   const SizedBox(height: 40),
+
 
                   // Login Button
                   Container(
@@ -166,7 +191,7 @@ if (result['success'] == true) {
     return;
   }
 
-  final userId = user['number'];
+final userId = user['number']; // 👈 convert String to int
   final firstName = user['first_name'] ?? '';
   final lastName = user['last_name'] ?? '';
   final fullName = '$firstName $lastName'.trim();
@@ -175,14 +200,15 @@ if (result['success'] == true) {
   print("Full Name: $fullName");
 
   await prefs.setString('user_name', fullName);
-  await prefs.setString('user_number', userId);
+await prefs.setString('user_number', user['number']); // leave as string
+
 
   Navigator.pushReplacement(
     context,
     MaterialPageRoute(
       builder: (context) => ChatPage(
-        currentUserid: userId,
-        currentUsername: fullName,
+ currentUserid:user['number'],
+         currentUsername: fullName,
         onLogout: () async {
           await prefs.clear();
           Navigator.pushReplacement(
