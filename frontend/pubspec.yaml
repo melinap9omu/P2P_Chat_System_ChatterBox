@@ -9,7 +9,7 @@ dependencies:
     sdk: flutter
 
   # 1. WebRTC for Flutter
-  flutter_webrtc: ^0.11.7
+  flutter_webrtc: ^0.14.2
 
   # 2. WebSocket Client
   web_socket_channel: ^2.4.0
@@ -25,7 +25,7 @@ dependencies:
   json_annotation: ^4.8.1
   freezed_annotation: ^2.4.1
 
-  # 6. HTTP Client (for public key upload and download and for login)
+  # 6. HTTP Client (for public key upload/download and login)
   http: ^1.2.1
 
   # Other packages
@@ -34,12 +34,11 @@ dependencies:
   path_provider: ^2.1.0
   image_picker: ^1.1.0
   permission_handler: ^11.3.1
-
-  open_file_plus: ^3.4.1
-
-  file_picker: ^6.2.1
-
-
+  open_filex: ^4.4.0
+  file_picker: ^10.2.0
+  dio: ^5.4.0
+  cookie_jar: ^4.0.8
+  dio_cookie_manager: ^3.0.0
   google_fonts: ^6.1.0
   shared_preferences: ^2.2.2  # ✅ Moved inside dependencies
 
@@ -53,3 +52,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/profile.png
+

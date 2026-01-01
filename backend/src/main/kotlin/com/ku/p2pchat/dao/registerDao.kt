@@ -7,5 +7,5 @@ import org.example.com.ku.p2pchat.com.ku.p2pchat.model.user
 
 
 interface registerDao {
-    fun registerUser(user: user): Boolean
+    fun registerUser(user:user): Boolean
 }

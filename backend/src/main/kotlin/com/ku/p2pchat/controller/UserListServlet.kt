@@ -33,9 +33,9 @@ class UserListServlet : HttpServlet() {
             val userListResponse = otherUsers.map {
                 mapOf(
                     "id" to it.id,
-                    "firstName" to it.FirstName,
-                    "lastName" to it.LastName,
-                    "phoneNo" to it.PhoneNo,
+                    "firstName" to it.firstName,
+                    "lastName" to it.lastName,
+                    "phoneNo" to it.phoneNo,
                     "email" to it.email
                 )
             }

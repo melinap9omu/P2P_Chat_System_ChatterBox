@@ -13,7 +13,7 @@ object DatabaseManager {
     // --- Configuration for MySQL (Uncomment and set your details for persistent storage) ---
     private const val JDBC_URL = "jdbc:mysql://localhost:3306/p2p_chat" // Your MySQL URL
     private const val DB_USERNAME = "root" // Your MySQL username
-    private const val DB_PASSWORD = "suniti@123" // Your MySQL password
+    private const val DB_PASSWORD = "melina" // Your MySQL password
     private const val DB_DRIVER = "com.mysql.cj.jdbc.Driver" // MySQL JDBC Driver
 
     init {
@@ -35,16 +35,18 @@ object DatabaseManager {
         try {
             connection = getConnection()
             val createTable = """
-                CREATE TABLE IF NOT EXISTS register (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    first_name VARCHAR(50) NOT NULL,
-                    last_name VARCHAR(50) NOT NULL,
-                    phone_no VARCHAR(20) NOT NULL UNIQUE, -- Changed from 'number' to 'phone_no' for consistency with Exposed model
-                    email VARCHAR(100) NOT NULL,
-                    password_hash VARCHAR(255) NOT NULL,
-                    public_key_pem TEXT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
+       CREATE TABLE IF NOT EXISTS register (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        first_name VARCHAR(50) NOT NULL,
+        last_name VARCHAR(50) NOT NULL,
+        phone_no VARCHAR(20) NOT NULL UNIQUE, -- Changed from 'number' to 'phone_no' for consistency with Exposed model
+        email VARCHAR(100) NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        public_key_pem TEXT,
+        profile_image_path VARCHAR(255),
+        profile_background_color VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
             """.trimIndent() // Using phone_no for consistency with Flutter User model
 
             val statement = connection.createStatement()

@@ -6,9 +6,6 @@ class User {
   final String phoneNo;
   final String email;
 
-
-
-
   User({required this.id,
     required this.firstname,
     required this.lastname,
@@ -21,7 +18,9 @@ class User {
       id: json['id'] as int,
       firstname: json['firstName'] as String,
       lastname: json['lastName'] as String,
-      phoneNo: json ['phoneNo'] as String,
+      // Safely handle 'phoneNo' by using the null-aware operator.
+      // If 'phoneNo' is null or missing, it defaults to an empty string.
+      phoneNo: json['phoneNo'] as String? ?? '',
       email: json['email'] as String,
     );
   }
@@ -30,11 +29,11 @@ class User {
 
   Map<String, dynamic> toJson(){
     return{
-  'id': id,
-  'firstName': firstname,
-  'lastName': lastname,
-  'phoneNo': phoneNo,
-  'email': email
-  };
-}
+      'id': id,
+      'firstName': firstname,
+      'lastName': lastname,
+      'phoneNo': phoneNo,
+      'email': email
+    };
+  }
 }

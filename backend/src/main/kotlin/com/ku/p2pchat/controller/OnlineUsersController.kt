@@ -5,39 +5,39 @@ import jakarta.servlet.annotation.WebServlet
 import jakarta.servlet.http.HttpServlet
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.example.com.ku.p2pchat.com.ku.p2pchat.model.user // Import your user model
-import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.sessionController
+import org.example.com.ku.p2pchat.com.ku.p2pchat.model.user // Import user model if needed, but OnlineUserData is used for mapping
+import org.example.com.ku.p2pchat.com.ku.p2pchat.controller.WebSocketSessionController // Import WebSocketSessionController
 
 import java.io.IOException
 
-@WebServlet("/users/online") // This annotation maps the servlet to the /users/online URL
+@WebServlet("/users/online")
 class OnlineUsersController : HttpServlet() {
     private val gson = Gson()
 
     override fun doGet(req: HttpServletRequest, resp: HttpServletResponse) {
         resp.contentType = "application/json"
-        resp.characterEncoding = "UTF-8" // Ensure proper character encoding
+        resp.characterEncoding = "UTF-8"
         val out = resp.writer
 
         try {
-            // For a real-time "online" list, you'd integrate with your WebSocket session management.
-            // For now, as per your DAO, we'll fetch ALL registered users.
-            // In a production app, you'd filter this to only truly online users
-            // by checking active WebSocket sessions or a database 'is_online' flag.
-            val onlineUsers = sessionController.getAllOnlineUsers()
+            // Retrieve online users from the WebSocketSessionController
+            val onlineUsers = WebSocketSessionController.getOnlineUsers()
 
-            // Filter out sensitive data like password_hash and public_key_pem
-            val usersForFrontend = onlineUsers.map { user ->
+            // Map the OnlineUserData objects to a format suitable for the frontend.
+            // Note: The fields available are id, firstname, lastname, email, and fullName.
+            val usersForFrontend = onlineUsers.map { onlineUserData ->
                 mapOf(
-                    "id" to user.id,
-                    "firstName" to user.FirstName, // Ensure these keys match Flutter's User.fromJson
-                    "lastName" to user.LastName
-                    // Do NOT send sensitive info like password_hash, public_key_pem, email, phoneNo here
+                    "id" to onlineUserData.id,
+                    "firstName" to onlineUserData.firstname,
+                    "lastName" to onlineUserData.lastname,
+                    "email" to onlineUserData.email,
+                    "fullName" to onlineUserData.fullName
                 )
             }
 
             resp.status = HttpServletResponse.SC_OK
             out.write(gson.toJson(usersForFrontend))
+            println("DEBUG: HTTP Fetched ${usersForFrontend.size} online users via WebSocketSessionController")
         } catch (e: Exception) {
             System.err.println("Error fetching online users: ${e.message}")
             e.printStackTrace()

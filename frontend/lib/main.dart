@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -6,6 +7,7 @@ import 'login_page.dart';
 void main() {
   runApp(const PeerChatApp());
 }
+
 
 class PeerChatApp extends StatelessWidget {
   const PeerChatApp({super.key});
@@ -197,7 +199,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           boxShadow: [
                             BoxShadow(
                               color:
-                                  const Color(0xFF5C2984).withOpacity(0.4),
+                              const Color(0xFF5C2984).withOpacity(0.4),
                               blurRadius: 15,
                               offset: const Offset(0, 8),
                             ),
@@ -209,8 +211,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                               context,
                               PageRouteBuilder(
                                 pageBuilder: (context, animation,
-                                        secondaryAnimation) =>
-                                    const LoginPage(),
+                                    secondaryAnimation) =>
+                                const LoginPage(),
                                 transitionsBuilder: (context, animation,
                                     secondaryAnimation, child) {
                                   return FadeTransition(
@@ -219,7 +221,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                   );
                                 },
                                 transitionDuration:
-                                    const Duration(milliseconds: 300),
+                                const Duration(milliseconds: 300),
                               ),
                             );
                           },

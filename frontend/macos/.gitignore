@@ -5,3 +5,31 @@
 # Xcode-related
 **/dgph
 **/xcuserdata/
+
+# IDE
+.idea/
+*.iml
+
+# Flutter
+.flutter-plugins
+.flutter-plugins-dependencies
+.dart_tool/
+build/
+
+# Android
+**/android/app/build/
+**/android/build/
+**/android/.gradle/
+*.apk
+
+# Kotlin / Java
+*.class
+*.log
+
+# Backend
+backend/build/
+backend/uploads/
+
+# OS
+.DS_Store
+Thumbs.db
